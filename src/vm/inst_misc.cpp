@@ -7,6 +7,8 @@
 #include "../profile/scriptvars.h"
 #include "../profile/configsystem.h"
 #include "../profile/games/cclcc/systemmenu.h"
+#include "../profile/ui/titlemenu.h"
+#include "../profile/game.h"
 
 #include "../game.h"
 #include "../mem.h"
@@ -22,6 +24,7 @@
 #include "../games/cc/titlemenu.h"
 #include "../games/cclcc/systemmenu.h"
 #include "../games/cclcc/helpmenu.h"
+#include <array>
 namespace Impacto {
 
 namespace Vm {
@@ -531,8 +534,45 @@ VmInstruction(InstTitleMenu) {
 VmInstruction(InstTitleMenuNew) {
   StartInstruction;
   PopUint8(type);
+  const bool diagnoseCHLCCSwitch =
+      Profile::Game::PlatformId == 0x100000 &&
+      Profile::TitleMenu::Type == UI::TitleMenuType::CHLCC;
+  const auto logTitleGate = [&](int gateId, const char* gate) {
+    if (!diagnoseCHLCCSwitch) return;
+    const auto* menu = UI::TitleMenuPtr;
+    const std::array<int, 12> snapshot = {
+        type,
+        static_cast<int>(thread->ScriptBufferId),
+        static_cast<int>(thread->IpOffset - 3),
+        ScrWork[2116],
+        ScrWork[SW_TITLEMODE],
+        ScrWork[SW_TITLEDISPCT],
+        ScrWork[SW_TITLECUR1],
+        menu ? static_cast<int>(menu->ChoiceMade) : -1,
+        menu ? static_cast<int>(menu->AllowsScriptInput) : -1,
+        static_cast<int>(
+            (Interface::PADinputButtonWentDown & Interface::PAD1A) != 0),
+        static_cast<int>(
+            (Interface::PADinputMouseWentDown & Interface::PAD1A) != 0),
+        gateId};
+    static std::array<int, 12> previous;
+    static bool logged = false;
+    if (logged && snapshot == previous) return;
+    ImpLog(LogLevel::Info, LogChannel::General,
+           "CHLCC TITLE DIAG TitleOpcodeNew subtype={} script={} ip=0x{:x} "
+           "phase[2116]={} SW_TITLEMODE[{}]={} SW_TITLEDISPCT[{}]={} "
+           "SW_TITLECUR1[{}]={} ChoiceMade={} AllowsScriptInput={} "
+           "PAD1AButton={} PAD1AMouse={} gate={}\n",
+           type, thread->ScriptBufferId, thread->IpOffset - 3, ScrWork[2116],
+           SW_TITLEMODE, ScrWork[SW_TITLEMODE], SW_TITLEDISPCT,
+           ScrWork[SW_TITLEDISPCT], SW_TITLECUR1, ScrWork[SW_TITLECUR1],
+           snapshot[7], snapshot[8], snapshot[9], snapshot[10], gate);
+    previous = snapshot;
+    logged = true;
+  };
   switch (type) {
     case 0:  // Init
+      logTitleGate(0, "init-no-wait");
       ImpLogSlow(LogLevel::Warning, LogChannel::VMStub,
                  "STUB instruction TitleMenu(type: Init)\n");
       switch (Profile::Vm::GameInstructionSet) {
@@ -544,6 +584,16 @@ VmInstruction(InstTitleMenuNew) {
       }
       break;
     case 1:  // Main
+      if (diagnoseCHLCCSwitch && ScrWork[2116] == 10 &&
+          UI::TitleMenuPtr != nullptr && UI::TitleMenuPtr->ChoiceMade &&
+          ScrWork[SW_TITLECUR1] == 0) {
+        UI::TitleMenuPtr->ChoiceMade = false;
+        SetFlag(2050, true);
+        ImpLog(LogLevel::Info, LogChannel::General,
+               "CHLCC TITLE DIAG TitleStartHandshake subtype={} phase[2116]={} "
+               "SW_TITLECUR1[{}]={} ChoiceMade=true->false flag[2050]=true\n",
+               type, ScrWork[2116], SW_TITLECUR1, ScrWork[SW_TITLECUR1]);
+      }
       switch (Profile::Vm::GameInstructionSet) {
         default:
           break;
@@ -567,6 +617,9 @@ VmInstruction(InstTitleMenuNew) {
           }
 
           if (ScrWork[SW_TITLEMODE] == mainState) {
+            logTitleGate(UI::TitleMenuPtr->AllowsScriptInput ? 1 : 2,
+                         UI::TitleMenuPtr->AllowsScriptInput ? "main-continue"
+                                                             : "main-block");
             if (!UI::TitleMenuPtr->AllowsScriptInput) {
               ResetInstruction;
               BlockThread;
@@ -576,6 +629,11 @@ VmInstruction(InstTitleMenuNew) {
                          (Profile::Vm::GameInstructionSet == InstructionSet::CHN
                               ? 400
                               : 60)) {
+            const bool confirmDown =
+                (Interface::PADinputButtonWentDown & Interface::PAD1A) ||
+                (Interface::PADinputMouseWentDown & Interface::PAD1A);
+            logTitleGate(confirmDown ? 3 : 4,
+                         confirmDown ? "press-transition" : "press-count");
             // Check "PRESS TO START" here
             if (((Interface::PADinputButtonWentDown & Interface::PAD1A) ||
                  (Interface::PADinputMouseWentDown & Interface::PAD1A))) {
@@ -586,6 +644,8 @@ VmInstruction(InstTitleMenuNew) {
             } else {
               ScrWork[SW_TITLEMOVIECT]++;
             }
+          } else {
+            logTitleGate(5, "no-title-gate");
           }
         } break;
         case InstructionSet::MO8: {
@@ -605,9 +665,13 @@ VmInstruction(InstTitleMenuNew) {
       }
       break;
     case 2:  // Init2
+      logTitleGate(7, "init2-no-wait");
       ImpLogSlow(LogLevel::Warning, LogChannel::VMStub,
                  "STUB instruction TitleMenu(type: Init2)\n");
       break;
+      break;
+    default:
+      logTitleGate(8, "unhandled-subtype");
       break;
   }
 }

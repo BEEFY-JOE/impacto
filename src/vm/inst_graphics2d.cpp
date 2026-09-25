@@ -6,6 +6,8 @@
 #include "../game.h"
 #include "../log.h"
 #include "../profile/scriptvars.h"
+#include "../profile/game.h"
+#include "../profile/ui/titlemenu.h"
 #include "../mem.h"
 #include "../background2d.h"
 #include "../character2d.h"
@@ -32,8 +34,23 @@ VmInstruction(InstCreateSurf) {
              type, surfaceId, width, height);
 }
 VmInstruction(InstReleaseSurf) {
+  const uint32_t instructionStartIp = thread->IpOffset;
   StartInstruction;
+  const bool chlccSwitch = Profile::Game::PlatformId == 0x100000 &&
+                           Profile::TitleMenu::Type == UI::TitleMenuType::CHLCC;
+  uint8_t unresolvedType = 0;
+  if (chlccSwitch) {
+    PopUint8(type);
+    unresolvedType = type;
+  }
   PopExpression(surfaceId);
+  if (chlccSwitch) {
+    ImpLog(LogLevel::Info, LogChannel::General,
+           "CHLCC SWITCH RELEASESURF DIAG script={} start=0x{:x} "
+           "unresolvedType=0x{:02x} surfaceId={} nextIp=0x{:x}\n",
+           thread->ScriptBufferId, instructionStartIp, unresolvedType,
+           surfaceId, thread->IpOffset);
+  }
   ImpLogSlow(LogLevel::Warning, LogChannel::VMStub,
              "STUB instruction ReleaseSurf(surfaceId: {:d})\n", surfaceId);
   if (surfaceId < 8) {

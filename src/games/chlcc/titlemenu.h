@@ -24,6 +24,7 @@ enum class TitleDispCtState : uint8_t {
   ExtraSubEntriesControl = 10,
   SystemSubEntriesFading = 11,
   SystemSubEntriesControl = 12,
+  Unresolved = 0xff,
 };
 
 class TitleMenu : public Menu {
@@ -77,6 +78,10 @@ class TitleMenu : public Menu {
   Impacto::CHLCC::IntroSequence IntroSequence;
 
   void ResetIntroSequence();
+  TitleDispCtState ResolveTitleDispCtState();
+  int CurrentSwitchTitlePhase = -1;
+  int PreviousSwitchTitlePhase = -1;
+  TitleDispCtState LastResolvedSwitchTitleState = TitleDispCtState::Unresolved;
 };
 
 }  // namespace CHLCC

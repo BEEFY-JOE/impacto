@@ -18,6 +18,7 @@
 
 #include "../background2d.h"
 #include "../inputsystem.h"
+#include "../log.h"
 #include "../audio/audiosystem.h"
 #include "../vm/interface/input.h"
 
@@ -59,7 +60,18 @@ void Init() {
 void NonGameplayUpdate(float dt) {
   switch (Profile::GameSpecific::GameSpecificType) {
     case GameSpecificType::CHLCC: {
-      if (UI ::TitleMenuPtr) UI::TitleMenuPtr->Update(dt);
+      if (UI ::TitleMenuPtr) {
+        if (Profile::Game::PlatformId == 0x100000) {
+          static bool logged = false;
+          if (!logged) {
+            ImpLog(
+                LogLevel::Info, LogChannel::General,
+                "CHLCC TITLE DIAG NonGameplayUpdate calls TitleMenu::Update\n");
+            logged = true;
+          }
+        }
+        UI::TitleMenuPtr->Update(dt);
+      }
     } break;
     case GameSpecificType::Dash:
     case GameSpecificType::RNE:
@@ -169,8 +181,52 @@ void RenderLayer(uint32_t layer) {
         CHLCC::BubblesEffect::GetInstance().Render();
       }
 
+      if (Profile::Game::PlatformId == 0x100000) {
+        static bool loggedLayerZero = false;
+        static bool loggedPriorityLayer = false;
+        static int previousTitleMode = -1;
+        static int previousFlag2085 = -1;
+        static int previousPriority = -1;
+        const int titleMode = GetFlag(SF_TITLEMODE);
+        const int flag2085 = GetFlag(2085);
+        const int priority = ScrWork[SW_TITLE_PRI];
+        if (layerInt == 0 &&
+            (!loggedLayerZero || titleMode != previousTitleMode ||
+             flag2085 != previousFlag2085 || priority != previousPriority)) {
+          ImpLog(
+              LogLevel::Info, LogChannel::General,
+              "CHLCC TITLE DIAG RenderLayer Main layer={} SF_TITLEMODE[{}]={} "
+              "flag[2085]={} SW_TITLE_PRI[{}]={} layerMatch={} titlePtr={}\n",
+              layerInt, SF_TITLEMODE, titleMode, flag2085, SW_TITLE_PRI,
+              priority, priority == layerInt, UI::TitleMenuPtr != nullptr);
+          loggedLayerZero = true;
+          previousTitleMode = titleMode;
+          previousFlag2085 = flag2085;
+          previousPriority = priority;
+        }
+        if (priority == layerInt && !loggedPriorityLayer) {
+          ImpLog(LogLevel::Info, LogChannel::General,
+                 "CHLCC TITLE DIAG title layer check passes layer={} "
+                 "SF_TITLEMODE[{}]={} flag[2085]={} SW_TITLE_PRI[{}]={}\n",
+                 layerInt, SF_TITLEMODE, titleMode, flag2085, SW_TITLE_PRI,
+                 priority);
+          loggedPriorityLayer = true;
+        }
+      }
       if (GetFlag(SF_TITLEMODE) && ScrWork[SW_TITLE_PRI] == layerInt) {
-        if (UI ::TitleMenuPtr) UI::TitleMenuPtr->Render();
+        if (UI ::TitleMenuPtr) {
+          if (Profile::Game::PlatformId == 0x100000) {
+            static bool logged = false;
+            if (!logged) {
+              ImpLog(LogLevel::Info, LogChannel::General,
+                     "CHLCC TITLE DIAG RenderLayer calls TitleMenu::Render "
+                     "layer={}\n",
+                     layerInt);
+              logged = true;
+            }
+          }
+          UI::TitleMenuPtr->Render();
+        }
       }
 
     } break;

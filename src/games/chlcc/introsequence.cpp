@@ -1,5 +1,6 @@
 #include "introsequence.h"
 #include "../../renderer/renderer.h"
+#include "../../log.h"
 #include "../../profile/game.h"
 #include "../../profile/games/chlcc/titlemenu.h"
 #include "../../background2d.h"
@@ -142,6 +143,23 @@ void IntroSequence::Render() {
     DrawBackground();
 
     // Draw the new background with the mask
+    if (PlatformId == 0x100000) {
+      static bool logged = false;
+      if (!logged) {
+        ImpLog(
+            LogLevel::Info, LogChannel::General,
+            "CHLCC TITLE DIAG TitleBg2 masked draw mount={} id={} "
+            "file={} texture={} sheet={}x{} source=({},{},{},{}) "
+            "dest=(0,0,{}x{}) maskAlpha=255 fade=256\n",
+            BackgroundSprite.Sheet.Path.Mount, BackgroundSprite.Sheet.Path.Id,
+            BackgroundSprite.Sheet.Path.FileName,
+            BackgroundSprite.Sheet.Texture, BackgroundSprite.Sheet.DesignWidth,
+            BackgroundSprite.Sheet.DesignHeight, BackgroundSprite.Bounds.X,
+            BackgroundSprite.Bounds.Y, BackgroundSprite.Bounds.Width,
+            BackgroundSprite.Bounds.Height, DesignWidth, DesignHeight);
+        logged = true;
+      }
+    }
     Renderer->DrawMaskedSprite(BackgroundSprite, FallingStarsMask,
                                RectF{0.0f, 0.0f, DesignWidth, DesignHeight},
                                255, 256);
@@ -179,6 +197,29 @@ void IntroSequence::DrawBackground() const {
   glm::vec2 designDimensions(DesignWidth, DesignHeight);
 
   Renderer->DrawQuad(RectF{0, 0, DesignWidth, DesignHeight}, glm::vec4(1.0f));
+  if (PlatformId == 0x100000) {
+    const float alpha = PanningAnimation.Progress;
+    const int alphaBand = alpha <= 0.0f ? 0 : alpha >= 1.0f ? 2 : 1;
+    static int previousAlphaBand = -1;
+    if (alphaBand != previousAlphaBand) {
+      ImpLog(LogLevel::Info, LogChannel::General,
+             "CHLCC TITLE DIAG TitleBg1 draw mount={} id={} file={} "
+             "texture={} sheet={}x{} source=({},{},{},{}) "
+             "dest=(0,0,{}x{}) tintAlpha={}\n",
+             IntroBackgroundSprite.Sheet.Path.Mount,
+             IntroBackgroundSprite.Sheet.Path.Id,
+             IntroBackgroundSprite.Sheet.Path.FileName,
+             IntroBackgroundSprite.Sheet.Texture,
+             IntroBackgroundSprite.Sheet.DesignWidth,
+             IntroBackgroundSprite.Sheet.DesignHeight,
+             IntroBackgroundSprite.Bounds.X, IntroBackgroundSprite.Bounds.Y,
+             IntroBackgroundSprite.Bounds.Width,
+             IntroBackgroundSprite.Bounds.Height,
+             IntroBackgroundSprite.ScaledWidth(),
+             IntroBackgroundSprite.ScaledHeight(), alpha);
+      previousAlphaBand = alphaBand;
+    }
+  }
   Renderer->DrawSprite(IntroBackgroundSprite, glm::vec2(0.0f),
                        {1.0f, 1.0f, 1.0f, PanningAnimation.Progress});
 

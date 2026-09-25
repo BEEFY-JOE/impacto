@@ -11,8 +11,12 @@
 #include "../../profile/games/chlcc/titlemenu.h"
 #include "../../profile/scriptvars.h"
 #include "../../background2d.h"
+#include "../../log.h"
 #include "../../profile/game.h"
 #include "../../profile/patch.h"
+#include <magic_enum/magic_enum.hpp>
+#include <array>
+#include <string_view>
 #include <vector>
 
 namespace Impacto {
@@ -28,12 +32,28 @@ using namespace Impacto::Vm::Interface;
 
 using namespace Impacto::UI::Widgets::CHLCC;
 
+constexpr int SwitchTitlePhaseWork = 2116;
+
 void TitleMenu::MenuButtonOnClick(Widgets::Button* target) {
+  const int previousChoice = ScrWork[SW_TITLECUR1];
+  const bool choiceMadeBefore = ChoiceMade;
+  const bool mainItemsFocusBefore = MainItems->HasFocus;
   target->Hovered = false;
   ScrWork[SW_TITLECUR1] = target->Id;
   ChoiceMade = true;
   // disable focus immediately, so MainItems couldn't get stuck being hovered
   MainItems->HasFocus = false;
+  if (Profile::Game::PlatformId == 0x100000) {
+    ImpLog(LogLevel::Info, LogChannel::General,
+           "CHLCC TITLE DIAG MainButtonClick id={} SW_TITLECUR1[{}]={}->{} "
+           "ChoiceMade={}->{} MainItemsFocus={}->{} phase[{}]={} "
+           "SW_TITLECT[{}]={} input={}\n",
+           target->Id, SW_TITLECUR1, previousChoice, ScrWork[SW_TITLECUR1],
+           choiceMadeBefore, ChoiceMade, mainItemsFocusBefore,
+           MainItems->HasFocus, SwitchTitlePhaseWork,
+           ScrWork[SwitchTitlePhaseWork], SW_TITLECT, ScrWork[SW_TITLECT],
+           magic_enum::enum_name(Input::CurrentInputDevice));
+  }
 }
 
 void TitleMenu::SecondaryButtonOnClick(Widgets::Button* target) {
@@ -298,8 +318,116 @@ void TitleMenu::ResetIntroSequence() {
   SpinningCircleFlashingAnimation.Reset();
 }
 
+TitleDispCtState TitleMenu::ResolveTitleDispCtState() {
+  if (Profile::Game::PlatformId != 0x100000) {
+    return static_cast<TitleDispCtState>(ScrWork[SW_TITLEDISPCT]);
+  }
+
+  const int phase = ScrWork[SwitchTitlePhaseWork];
+  const bool phaseChanged = phase != CurrentSwitchTitlePhase;
+  if (phaseChanged) {
+    PreviousSwitchTitlePhase = CurrentSwitchTitlePhase;
+    CurrentSwitchTitlePhase = phase;
+  }
+
+  TitleDispCtState state = TitleDispCtState::Unresolved;
+  switch (phase) {
+    case 0:
+      state = TitleDispCtState::IntroAnimation;
+      break;
+    case 2:
+      state = TitleDispCtState::PressStart;
+      break;
+    case 3:
+      if (PreviousSwitchTitlePhase == 2) {
+        state = TitleDispCtState::EmptyBackground;
+      } else if (PreviousSwitchTitlePhase == 10) {
+        state = TitleDispCtState::MainEntriesFading;
+      }
+      break;
+    case 9:
+      state = ScrWork[SW_TITLECT] < 32 ? TitleDispCtState::MainEntriesFading
+                                       : TitleDispCtState::MainEntriesControl;
+      break;
+    case 10:
+      state = TitleDispCtState::MainEntriesControl;
+      break;
+    default:
+      break;
+  }
+
+  if (phaseChanged || state != LastResolvedSwitchTitleState) {
+    const std::string_view stateName = state == TitleDispCtState::Unresolved
+                                           ? std::string_view("UNRESOLVED")
+                                           : magic_enum::enum_name(state);
+    ImpLog(LogLevel::Info, LogChannel::General,
+           "CHLCC TITLE DIAG Translator phase[{}]={} predecessor={} "
+           "SW_TITLECT[{}]={} presentation={} MainItemsVisibility={} "
+           "MainItemsFocus={}\n",
+           SwitchTitlePhaseWork, phase, PreviousSwitchTitlePhase, SW_TITLECT,
+           ScrWork[SW_TITLECT], stateName,
+           static_cast<int>(MainItems->VisibilityState), MainItems->HasFocus);
+    LastResolvedSwitchTitleState = state;
+  }
+  return state;
+}
+
 void TitleMenu::Update(float dt) {
-  UpdateInput(dt);
+  const auto presentationState = ResolveTitleDispCtState();
+  const bool allowTitleInput =
+      Profile::Game::PlatformId != 0x100000 ||
+      presentationState != TitleDispCtState::Unresolved;
+  if (Profile::Game::PlatformId == 0x100000) {
+    const int displayCt = ScrWork[SW_TITLEDISPCT];
+    const int titleCt = ScrWork[SW_TITLECT];
+    const int raw2116 = ScrWork[2116];
+    const int menuCt = ScrWork[SW_MENUCT];
+    const int maskAlpha = ScrWork[SW_TITLEMASKALPHA];
+    const std::array<int, 12> snapshot = {
+        static_cast<int>(State),
+        GetFlag(SF_TITLEMODE),
+        displayCt >= 0 && displayCt <= 12 ? displayCt
+        : displayCt == 32                 ? 32
+        : displayCt == 934                ? 934
+                                          : 13,
+        titleCt == 0     ? 0
+        : titleCt == 32  ? 32
+        : titleCt == 934 ? 934
+                         : 1,
+        raw2116,
+        menuCt == 0   ? 0
+        : menuCt < 64 ? 1
+                      : 64,
+        maskAlpha == 0     ? 0
+        : maskAlpha >= 255 ? 255
+                           : 1,
+        ScrWork[SW_TITLEMASKCOLOR],
+        ScrWork[SW_TITLECUR1],
+        static_cast<int>(IntroSequence.IntroAnimation.State),
+        static_cast<int>(IntroSequence.FallingStarsAnimation.State),
+        IntroSequence.FallingStarsAnimation.IsIn()};
+    static std::array<int, 12> previous;
+    static bool logged = false;
+    if (!logged || snapshot != previous) {
+      ImpLog(LogLevel::Info, LogChannel::General,
+             "CHLCC TITLE DIAG Update State={} SF_TITLEMODE[{}]={} "
+             "SW_TITLEDISPCT[{}]={} SW_TITLECT[{}]={} ScrWork[2116]={} "
+             "SW_MENUCT[{}]={} "
+             "SW_TITLEMASKALPHA[{}]={} SW_TITLEMASKCOLOR[{}]={} "
+             "SW_TITLECUR1[{}]={} IntroState={} FallingStarsState={} "
+             "FallingStarsIsIn={}\n",
+             static_cast<int>(State), SF_TITLEMODE, GetFlag(SF_TITLEMODE),
+             SW_TITLEDISPCT, displayCt, SW_TITLECT, titleCt, raw2116, SW_MENUCT,
+             menuCt, SW_TITLEMASKALPHA, maskAlpha, SW_TITLEMASKCOLOR,
+             ScrWork[SW_TITLEMASKCOLOR], SW_TITLECUR1, ScrWork[SW_TITLECUR1],
+             static_cast<int>(IntroSequence.IntroAnimation.State),
+             static_cast<int>(IntroSequence.FallingStarsAnimation.State),
+             IntroSequence.FallingStarsAnimation.IsIn());
+      previous = snapshot;
+      logged = true;
+    }
+  }
+  if (allowTitleInput) UpdateInput(dt);
   PressToStartAnimation.Update(dt);
   SpinningCircleAnimation.Update(dt);
   SpinningCircleFlashingAnimation.Update(dt);
@@ -309,8 +437,7 @@ void TitleMenu::Update(float dt) {
   if (GetFlag(SF_TITLEMODE)) {
     Show();
   } else if (State == Shown &&
-             static_cast<TitleDispCtState>(ScrWork[SW_TITLEDISPCT]) !=
-                 TitleDispCtState::ExtraSubEntriesControl) {
+             presentationState != TitleDispCtState::ExtraSubEntriesControl) {
     // when loading/starting a game from a submenu
     Hide();
   }
@@ -323,21 +450,21 @@ void TitleMenu::Update(float dt) {
   if (State == Shown && IsFocused && !hasVisibleBGs) {
     MainItems->Tint.a =
         glm::smoothstep(0.0f, 1.0f, PrimaryFadeAnimation.Progress);
-    MainItems->UpdateInput(dt);
+    if (allowTitleInput) MainItems->UpdateInput(dt);
     MainItems->Update(dt);
     const float secondarySmoothProgress =
         glm::smoothstep(0.0f, 1.0f, SecondaryFadeAnimation.Progress);
     LoadItems->Tint.a = secondarySmoothProgress;
-    LoadItems->UpdateInput(dt);
+    if (allowTitleInput) LoadItems->UpdateInput(dt);
     LoadItems->Update(dt);
     CurrentExtraItems->Tint.a = secondarySmoothProgress;
-    CurrentExtraItems->UpdateInput(dt);
+    if (allowTitleInput) CurrentExtraItems->UpdateInput(dt);
     CurrentExtraItems->Update(dt);
     SystemItems->Tint.a = secondarySmoothProgress;
-    SystemItems->UpdateInput(dt);
+    if (allowTitleInput) SystemItems->UpdateInput(dt);
     SystemItems->Update(dt);
 
-    switch (static_cast<TitleDispCtState>(ScrWork[SW_TITLEDISPCT])) {
+    switch (presentationState) {
       case TitleDispCtState::IntroAnimation: {
         if (IntroSequence.IntroAnimation.IsIn() && ScrWork[SW_TITLECT] == 0) {
           ResetIntroSequence();
@@ -473,11 +600,55 @@ void TitleMenu::Update(float dt) {
 }
 
 void TitleMenu::Render() {
+  const auto presentationState = ResolveTitleDispCtState();
+  if (Profile::Game::PlatformId == 0x100000) {
+    const int displayState = ScrWork[SW_TITLEDISPCT];
+    const int branch = presentationState == TitleDispCtState::Unresolved
+                           ? -1
+                           : static_cast<int>(presentationState);
+    const std::array<int, 4> snapshot = {static_cast<int>(State),
+                                         GetFlag(SF_TITLEMODE),
+                                         ScrWork[SW_MENUCT] < 64, branch};
+    static std::array<int, 4> previous;
+    static bool logged = false;
+    if (!logged || snapshot != previous) {
+      ImpLog(LogLevel::Info, LogChannel::General,
+             "CHLCC TITLE DIAG Render entered State={} SF_TITLEMODE[{}]={} "
+             "SW_MENUCT[{}]={} menuGate={} SW_TITLEDISPCT[{}]={} "
+             "renderBranch={}\n",
+             static_cast<int>(State), SF_TITLEMODE, GetFlag(SF_TITLEMODE),
+             SW_MENUCT, ScrWork[SW_MENUCT], ScrWork[SW_MENUCT] < 64,
+             SW_TITLEDISPCT, displayState, branch);
+      previous = snapshot;
+      logged = true;
+    }
+  }
   if (State != Hidden && GetFlag(SF_TITLEMODE)) {
     if (ScrWork[SW_MENUCT] < 64) {
-      switch (static_cast<TitleDispCtState>(ScrWork[SW_TITLEDISPCT])) {
+      switch (presentationState) {
         case TitleDispCtState::IntroAnimation: {
           if (IntroSequence.FallingStarsAnimation.IsIn()) {
+            if (Profile::Game::PlatformId == 0x100000) {
+              static bool logged = false;
+              if (!logged) {
+                ImpLog(LogLevel::Info, LogChannel::General,
+                       "CHLCC TITLE DIAG TitleBg2 intro draw mount={} id={} "
+                       "file={} texture={} sheet={}x{} source=({},{},{},{}) "
+                       "dest=(0,0,{}x{}) tint=(1,1,1,1)\n",
+                       BackgroundSprite.Sheet.Path.Mount,
+                       BackgroundSprite.Sheet.Path.Id,
+                       BackgroundSprite.Sheet.Path.FileName,
+                       BackgroundSprite.Sheet.Texture,
+                       BackgroundSprite.Sheet.DesignWidth,
+                       BackgroundSprite.Sheet.DesignHeight,
+                       BackgroundSprite.Bounds.X, BackgroundSprite.Bounds.Y,
+                       BackgroundSprite.Bounds.Width,
+                       BackgroundSprite.Bounds.Height,
+                       BackgroundSprite.ScaledWidth(),
+                       BackgroundSprite.ScaledHeight());
+                logged = true;
+              }
+            }
             Renderer->DrawSprite(BackgroundSprite, glm::vec2(0.0f));
           }
 
@@ -532,6 +703,23 @@ void TitleMenu::Render() {
     int maskAlpha = ScrWork[SW_TITLEMASKALPHA];
     glm::vec4 col = ScrWorkGetColor(SW_TITLEMASKCOLOR);
     col.a = glm::min(maskAlpha / 255.0f, 1.0f);
+    if (Profile::Game::PlatformId == 0x100000) {
+      const int alphaBand = maskAlpha == 0 ? 0 : maskAlpha >= 255 ? 255 : 1;
+      const std::array<int, 2> snapshot = {alphaBand,
+                                           ScrWork[SW_TITLEMASKCOLOR]};
+      static std::array<int, 2> previous;
+      static bool logged = false;
+      if (!logged || snapshot != previous) {
+        ImpLog(LogLevel::Info, LogChannel::General,
+               "CHLCC TITLE DIAG final mask quad after title draws "
+               "SW_TITLEMASKALPHA[{}]={} SW_TITLEMASKCOLOR[{}]={} "
+               "rgba=({},{},{},{})\n",
+               SW_TITLEMASKALPHA, maskAlpha, SW_TITLEMASKCOLOR,
+               ScrWork[SW_TITLEMASKCOLOR], col.r, col.g, col.b, col.a);
+        previous = snapshot;
+        logged = true;
+      }
+    }
     Renderer->DrawQuad(RectF{0.0f, 0.0f, Profile::Game::DesignWidth,
                              Profile::Game::DesignHeight},
                        col);
@@ -554,6 +742,23 @@ void TitleMenu::DrawSpinningCircle(float alpha) const {
 }
 
 void TitleMenu::DrawTitleMenuBackGraphics() const {
+  if (Profile::Game::PlatformId == 0x100000) {
+    static bool logged = false;
+    if (!logged) {
+      ImpLog(LogLevel::Info, LogChannel::General,
+             "CHLCC TITLE DIAG TitleBg2 steady draw mount={} id={} "
+             "file={} texture={} sheet={}x{} source=({},{},{},{}) "
+             "dest=(0,0,{}x{}) tint=(1,1,1,1)\n",
+             BackgroundSprite.Sheet.Path.Mount, BackgroundSprite.Sheet.Path.Id,
+             BackgroundSprite.Sheet.Path.FileName,
+             BackgroundSprite.Sheet.Texture, BackgroundSprite.Sheet.DesignWidth,
+             BackgroundSprite.Sheet.DesignHeight, BackgroundSprite.Bounds.X,
+             BackgroundSprite.Bounds.Y, BackgroundSprite.Bounds.Width,
+             BackgroundSprite.Bounds.Height, BackgroundSprite.ScaledWidth(),
+             BackgroundSprite.ScaledHeight());
+      logged = true;
+    }
+  }
   Renderer->DrawSprite(BackgroundSprite, glm::vec2(0.0f));
   DrawSpinningCircle(1.0f);
   Renderer->DrawSprite(DelusionADVUnderSprite,
