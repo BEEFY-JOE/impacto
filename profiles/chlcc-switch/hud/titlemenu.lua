@@ -6,6 +6,8 @@ root.Sprites["IntroSmallStar"].Bounds = { X = 1729, Y = 875, Width = 69, Height 
 
 root.Sprites["IntroBigStar"].Bounds = { X = 1733, Y = 592, Width = 269, Height = 256 };
 
+root.TitleMenu.IntroFallingStarsAnimationDistance = 3819;
+
 root.Sprites["IntroBrightGreenHighlight"].Bounds = { X = 2304, Y = 0, Width = 384, Height = 384 };
 
 root.Sprites["IntroSunHighlight"].Bounds = { X = 0, Y = 0, Width = 768, Height = 768 };
