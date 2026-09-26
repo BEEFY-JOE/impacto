@@ -322,7 +322,9 @@ void IntroSequence::DrawFallingStars() const {
                              IntroFallingStarsAnimationDistance *
                              FallingStarsAnimation.Progress;
 
-    glm::vec2 position = origin + displacement;
+    glm::vec2 position =
+        (origin + displacement) *
+        glm::vec2{DesignWidth / 1280.0f, DesignHeight / 720.0f};
     float angle = initialAngle + std::numbers::pi_v<float> * 2.0f *
                                      FallingStarsRotationAnimation.Progress;
 
