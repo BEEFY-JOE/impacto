@@ -36,4 +36,5 @@ root.Vm.MaxLinkedBgBuffers = 2;
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/vfs.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/sprites.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/font.lua');
+include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/titlemenu.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/sysmesboxdisplay.lua');
