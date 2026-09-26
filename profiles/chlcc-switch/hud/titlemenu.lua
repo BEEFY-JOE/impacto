@@ -1,4 +1,10 @@
+root.Sprites["StarLogo"].Bounds = { X = 932, Y = 1391, Width = 98, Height = 102 };
+
 root.Sprites["TitleMenuIntroBackground"].Bounds = { X = 0, Y = 0, Width = 1920, Height = 1080 };
+
+root.Sprites["IntroSmallStar"].Bounds = { X = 1729, Y = 875, Width = 69, Height = 68 };
+
+root.Sprites["IntroBigStar"].Bounds = { X = 1733, Y = 592, Width = 269, Height = 256 };
 
 root.Sprites["IntroBrightGreenHighlight"].Bounds = { X = 2304, Y = 0, Width = 384, Height = 384 };
 
