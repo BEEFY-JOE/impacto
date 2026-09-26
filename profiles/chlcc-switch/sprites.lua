@@ -34,3 +34,15 @@ sheet("DelusionMask",       29, 2400, 1080);
 sheet("DelusionText",       31, 1920, 2016);
 sheet("Trophy",             32, 2048, 538);
 root.SpriteSheets["FontOutline"] = nil;
+
+for i = 0, 7 do
+    root.Sprites["WaitIconSpriteAnimationDef" .. (i + 1)].Bounds = {
+        X = 0, Y = 146 + 51 * i, Width = 50, Height = 48
+    };
+end
+
+for i = 0, 2 do
+    root.Sprites["SaveIcon" .. i].Bounds = {
+        X = 1216, Y = 80 + 32 * i, Width = 190, Height = 30
+    };
+end
