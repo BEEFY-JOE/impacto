@@ -33,7 +33,7 @@ root.SpriteSheets = {
     },
     -- Highlights and the Delusion/Trophy sheet mappings remain provisional.
     ["Highlights"] = {
-        Path = { Mount = "system", Id = 19 },
+        Path = { Mount = "system", Id = 20 },
         DesignWidth = 3072,
         DesignHeight = 1536
     },
