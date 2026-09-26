@@ -1,39 +1,129 @@
 -- Mappings are from program1 system_swi.mpk names and PNG IHDR dimensions.
 -- Atlas sprite bounds inherited from the PS3 profile remain provisional.
-local function sheet(name, id, width, height)
-    root.SpriteSheets[name] = {
-        Path = {Mount = "system", Id = id},
-        DesignWidth = width,
-        DesignHeight = height,
-    };
-end
-
-sheet("CG",                  0, 3072, 1536); -- albumchip
-sheet("AlbumThumbnailSheet",25, 3072, 1536);
-sheet("AlbumThumbnailSheet2",26,3072, 1536);
-sheet("Backlog",             1, 3072, 1536);
-sheet("ClearList",           3, 3072, 1536);
-sheet("Data",               27, 3072, 1536); -- data01_chlcc
-sheet("Menu",               11, 3072, 1536);
-sheet("Tips",               16, 3072, 1536);
-sheet("Font",                6, 4096, 10403);
-sheet("Main",               11, 3072, 1536);
-sheet("Movie",              12, 3072, 1536);
-sheet("Sound",              13, 3072, 1536);
-sheet("Options",             4, 3072, 1536);
-sheet("Save",               15, 3072, 1536);
-sheet("TitleBg1",           17, 1920, 1080);
-sheet("TitleBg2",           18, 1920, 1080);
-sheet("Title",              19, 3072, 1536);
-
--- The remaining PS3 sheet concepts have no confirmed one-to-one Switch
--- equivalent. These are temporary valid-image mappings for startup testing.
-sheet("Highlights",         19, 3072, 1536);
-sheet("DelusionUnderlayer", 28, 1920, 1080);
-sheet("DelusionMask",       29, 2400, 1080);
-sheet("DelusionText",       31, 1920, 2016);
-sheet("Trophy",             32, 2048, 538);
-root.SpriteSheets["FontOutline"] = nil;
+root.SpriteSheets = {
+    ["CG"] = {
+        Path = { Mount = "system", Id = 0 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["AlbumThumbnailSheet"] = {
+        Path = { Mount = "system", Id = 25 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["AlbumThumbnailSheet2"] = {
+        Path = { Mount = "system", Id = 26 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Backlog"] = {
+        Path = { Mount = "system", Id = 1 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["ClearList"] = {
+        Path = { Mount = "system", Id = 3 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Data"] = {
+        Path = { Mount = "system", Id = 27 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    -- Highlights and the Delusion/Trophy sheet mappings remain provisional.
+    ["Highlights"] = {
+        Path = { Mount = "system", Id = 19 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Menu"] = {
+        Path = { Mount = "system", Id = 11 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["DelusionUnderlayer"] = {
+        Path = { Mount = "system", Id = 28 },
+        DesignWidth = 1920,
+        DesignHeight = 1080
+    },
+    ["DelusionMask"] = {
+        Path = { Mount = "system", Id = 29 },
+        DesignWidth = 2400,
+        DesignHeight = 1080
+    },
+    ["Tips"] = {
+        Path = { Mount = "system", Id = 16 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Font"] = {
+        Path = { Mount = "system", Id = 6 },
+        DesignWidth = 4096,
+        DesignHeight = 10403
+    },
+    -- Stock CHLCC's LanguageBarrier font retains these resource sheets.
+    ["FontLBForeground"] = {
+        Path = "resources/chlcc/font-lb/foreground.png",
+        DesignWidth = 4096,
+        DesignHeight = 2496
+    },
+    ["FontLBOutline"] = {
+        Path = "resources/chlcc/font-lb/outline.png",
+        DesignWidth = 4096,
+        DesignHeight = 2496
+    },
+    ["Main"] = {
+        Path = { Mount = "system", Id = 11 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Movie"] = {
+        Path = { Mount = "system", Id = 12 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Sound"] = {
+        Path = { Mount = "system", Id = 13 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Options"] = {
+        Path = { Mount = "system", Id = 4 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["Save"] = {
+        Path = { Mount = "system", Id = 15 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["TitleBg1"] = {
+        Path = { Mount = "system", Id = 17 },
+        DesignWidth = 1920,
+        DesignHeight = 1080
+    },
+    ["TitleBg2"] = {
+        Path = { Mount = "system", Id = 18 },
+        DesignWidth = 1920,
+        DesignHeight = 1080
+    },
+    ["Title"] = {
+        Path = { Mount = "system", Id = 19 },
+        DesignWidth = 3072,
+        DesignHeight = 1536
+    },
+    ["DelusionText"] = {
+        Path = { Mount = "system", Id = 31 },
+        DesignWidth = 1920,
+        DesignHeight = 2016
+    },
+    ["Trophy"] = {
+        Path = { Mount = "system", Id = 32 },
+        DesignWidth = 2048,
+        DesignHeight = 538
+    }
+};
 
 for i = 0, 7 do
     root.Sprites["WaitIconSpriteAnimationDef" .. (i + 1)].Bounds = {
