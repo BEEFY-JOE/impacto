@@ -20,9 +20,12 @@ inline Sprite LineSprites[LineEntriesNumMax];
 inline Sprite BackgroundSprite;
 inline Sprite MainGuideSprite;
 inline glm::vec2 MainGuidePosition;
+inline bool HasHelpMainEntry = false;
+inline bool StartMainEntryPresentationOnly = false;
+inline bool ConfigMainEntryPresentationOnly = false;
 inline bool LoadSubmenuHandledByUI = false;
 inline bool LockedExtraSubmenuHandledByUI = false;
-inline int LockedExtraEntriesNum = 3;
+inline bool LockedExtraHasTrophy = true;
 
 inline Sprite DelusionADVUnderSprite;
 inline Sprite DelusionADVSprite;

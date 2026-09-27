@@ -23,12 +23,17 @@ void Configure() {
   if (TryGetMember<Sprite>("MainGuideSprite", MainGuideSprite)) {
     MainGuidePosition = EnsureGetMember<glm::vec2>("MainGuidePosition");
   }
+  HasHelpMainEntry = TryGetMember<bool>("HasHelpMainEntry").value_or(false);
+  StartMainEntryPresentationOnly =
+      TryGetMember<bool>("StartMainEntryPresentationOnly").value_or(false);
+  ConfigMainEntryPresentationOnly =
+      TryGetMember<bool>("ConfigMainEntryPresentationOnly").value_or(false);
   LoadSubmenuHandledByUI =
       TryGetMember<bool>("LoadSubmenuHandledByUI").value_or(false);
   LockedExtraSubmenuHandledByUI =
       TryGetMember<bool>("LockedExtraSubmenuHandledByUI").value_or(false);
-  LockedExtraEntriesNum =
-      TryGetMember<int>("LockedExtraEntriesNum").value_or(3);
+  LockedExtraHasTrophy =
+      TryGetMember<bool>("LockedExtraHasTrophy").value_or(true);
   DelusionADVUnderSprite = EnsureGetMember<Sprite>("DelusionADVUnderSprite");
   DelusionADVSprite = EnsureGetMember<Sprite>("DelusionADVSprite");
   DelusionADVPosition = EnsureGetMember<glm::vec2>("DelusionADVPosition");

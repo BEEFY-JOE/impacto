@@ -84,7 +84,7 @@ TitleMenu::TitleMenu() {
                           ItemHighlightSprite,
                           glm::vec2(ItemHighlightOffset.x - 1.0f,
                                     ItemYBase - 1.0f + 0 * ItemPadding));
-  Start->OnClickHandler = onClick;
+  if (!StartMainEntryPresentationOnly) Start->OnClickHandler = onClick;
   MainItems->Add(Start, FDIR_DOWN);
 
   // Load menu button
@@ -115,17 +115,13 @@ TitleMenu::TitleMenu() {
                                     ItemYBase - 1.0f + 2 * ItemPadding));
   if (LockedExtraSubmenuHandledByUI) {
     Extra->OnClickHandler = [this](auto* btn) {
-      if (CurrentExtraItems != LockedExtraItems) {
-        MenuButtonOnClick(btn);
-        return;
-      }
+      if (CurrentExtraItems != LockedExtraItems) return;
       btn->Hovered = false;
       LockedExtraSubmenuOpen = true;
       MainItems->HasFocus = false;
       LockedExtraItems->Show();
-      ClearList = static_cast<TitleButton*>(LockedExtraItems->Children[0]);
-      CurrentlyFocusedElement = ClearList;
-      ClearList->HasFocus = true;
+      CurrentlyFocusedElement = LockedExtraItems->Children[0];
+      CurrentlyFocusedElement->HasFocus = true;
       Extra->HasFocus = true;
       SecondaryFadeAnimation.StartIn(true);
     };
@@ -139,11 +135,10 @@ TitleMenu::TitleMenu() {
                            ItemHighlightSprite,
                            glm::vec2(ItemHighlightOffset.x - 1.0f,
                                      ItemYBase - 1.0f + 3 * ItemPadding));
-  System->OnClickHandler = onClick;
+  if (!ConfigMainEntryPresentationOnly) System->OnClickHandler = onClick;
   MainItems->Add(System, FDIR_DOWN);
 
-  const bool hasHelp = MenuEntriesNum > 14;
-  if (hasHelp) {
+  if (HasHelpMainEntry) {
     auto* help = new TitleButton(4, MenuEntriesSprites[14],
                                  MenuEntriesHSprites[14], ItemHighlightSprite,
                                  glm::vec2(ItemHighlightOffset.x - 1.0f,
@@ -153,10 +148,11 @@ TitleMenu::TitleMenu() {
 
   // Exit menu button (Configuration/Patch driven)
   if (Patch::HasScriptedExitLogic) {
+    const int exitPosition = HasHelpMainEntry ? 5 : 4;
     auto* const exitPtr = new TitleButton(
-        hasHelp ? 5 : 4, ExitSprite, ExitHighlightSprite, ItemHighlightSprite,
+        exitPosition, ExitSprite, ExitHighlightSprite, ItemHighlightSprite,
         glm::vec2(ItemHighlightOffset.x - 1.0f,
-                  ItemYBase - 1.0f + (hasHelp ? 5 : 4) * ItemPadding));
+                  ItemYBase - 1.0f + exitPosition * ItemPadding));
     exitPtr->OnClickHandler = [this](auto* btn) {
       return ExitButtonOnClick(btn);
     };
@@ -209,7 +205,7 @@ TitleMenu::TitleMenu() {
   LockedExtraItems->Add(Tips, FDIR_DOWN);
 
   // Trophy secondary Extra menu button
-  if (LockedExtraEntriesNum > 2) {
+  if (LockedExtraHasTrophy) {
     Trophy = new TitleButton(2, MenuEntriesSprites[11], MenuEntriesHSprites[11],
                              SecondaryItemHighlightSprite,
                              glm::vec2(SecondaryItemX, ItemTipsY));
@@ -350,11 +346,9 @@ void TitleMenu::Hide() {
     }
     IsFocused = false;
 
-    if (LockedExtraSubmenuHandledByUI &&
-        LockedExtraItems->VisibilityState != Hidden)
-      LockedExtraItems->Hide();
     MainItems->Hide();
     LoadItems->Hide();
+    if (LockedExtraSubmenuHandledByUI) LockedExtraItems->Hide();
     SystemItems->Hide();
     UnlockedExtraItems->Hide();
   }
@@ -443,10 +437,6 @@ void TitleMenu::Update(float dt) {
     PADinputButtonWentDown &= ~PAD1B;
     PADinputMouseWentDown &= ~PAD1B;
   }
-  const bool allowTitleInput =
-      Profile::Vm::GameInstructionSet !=
-          Impacto::Vm::InstructionSet::LCCSwitch ||
-      presentationState != TitleDispCtState::Unresolved;
   if (Profile::Vm::GameInstructionSet ==
       Impacto::Vm::InstructionSet::LCCSwitch) {
     const int displayCt = ScrWork[SW_TITLEDISPCT];
@@ -499,7 +489,7 @@ void TitleMenu::Update(float dt) {
       logged = true;
     }
   }
-  if (allowTitleInput) UpdateInput(dt);
+  UpdateInput(dt);
   PressToStartAnimation.Update(dt);
   SpinningCircleAnimation.Update(dt);
   SpinningCircleFlashingAnimation.Update(dt);
@@ -522,18 +512,18 @@ void TitleMenu::Update(float dt) {
   if (State == Shown && IsFocused && !hasVisibleBGs) {
     MainItems->Tint.a =
         glm::smoothstep(0.0f, 1.0f, PrimaryFadeAnimation.Progress);
-    if (allowTitleInput) MainItems->UpdateInput(dt);
+    MainItems->UpdateInput(dt);
     MainItems->Update(dt);
     const float secondarySmoothProgress =
         glm::smoothstep(0.0f, 1.0f, SecondaryFadeAnimation.Progress);
     LoadItems->Tint.a = secondarySmoothProgress;
-    if (allowTitleInput) LoadItems->UpdateInput(dt);
+    LoadItems->UpdateInput(dt);
     LoadItems->Update(dt);
     CurrentExtraItems->Tint.a = secondarySmoothProgress;
-    if (allowTitleInput) CurrentExtraItems->UpdateInput(dt);
+    CurrentExtraItems->UpdateInput(dt);
     CurrentExtraItems->Update(dt);
     SystemItems->Tint.a = secondarySmoothProgress;
-    if (allowTitleInput) SystemItems->UpdateInput(dt);
+    SystemItems->UpdateInput(dt);
     SystemItems->Update(dt);
 
     switch (presentationState) {
