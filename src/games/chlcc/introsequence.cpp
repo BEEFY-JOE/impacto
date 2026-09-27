@@ -266,7 +266,7 @@ void IntroSequence::DrawBouncingStar() const {
   float x = DesignWidth / 2.0f - IntroBouncingStarSprite.Bounds.Width / 2.0f +
             (1.0f - StarBounceAnimation.Progress) * 0.61f * DesignWidth;
 
-  float y = DesignHeight / 2 + IntroBouncingStarSprite.Bounds.Height;
+  float y = DesignHeight / 2 + IntroBouncingStarBaseYOffset;
   if (StarBounceAnimation.Progress < 0.357f) {
     float progress = StarBounceAnimation.Progress / 0.357f;
     y -= std::sin(progress * std::numbers::pi_v<float>) * 0.664f * DesignHeight;
