@@ -113,7 +113,25 @@ TitleMenu::TitleMenu() {
                           ItemHighlightSprite,
                           glm::vec2(ItemHighlightOffset.x - 1.0f,
                                     ItemYBase - 1.0f + 2 * ItemPadding));
-  Extra->OnClickHandler = onClick;
+  if (LockedExtraSubmenuHandledByUI) {
+    Extra->OnClickHandler = [this](auto* btn) {
+      if (CurrentExtraItems != LockedExtraItems) {
+        MenuButtonOnClick(btn);
+        return;
+      }
+      btn->Hovered = false;
+      LockedExtraSubmenuOpen = true;
+      MainItems->HasFocus = false;
+      LockedExtraItems->Show();
+      ClearList = static_cast<TitleButton*>(LockedExtraItems->Children[0]);
+      CurrentlyFocusedElement = ClearList;
+      ClearList->HasFocus = true;
+      Extra->HasFocus = true;
+      SecondaryFadeAnimation.StartIn(true);
+    };
+  } else {
+    Extra->OnClickHandler = onClick;
+  }
   MainItems->Add(Extra, FDIR_DOWN);
 
   // System menu button
@@ -172,32 +190,35 @@ TitleMenu::TitleMenu() {
   // Clear List secondary Extra menu button
   ClearList = new TitleButton(0, MenuEntriesSprites[6], MenuEntriesHSprites[6],
                               SecondaryItemHighlightSprite,
-                              glm::vec2(SecondaryItemX, ItemSoundLibraryY));
-  ClearList->OnClickHandler = secondaryOnClick;
+                              glm::vec2(SecondaryItemX, LockedExtraClearListY));
+  if (!LockedExtraSubmenuHandledByUI)
+    ClearList->OnClickHandler = secondaryOnClick;
   ClearList->IsSubButton = true;
   ClearList->LineDecoration = LineSprites[2];
-  ClearList->LineY = SecondaryMenuExtraSoundY;
+  ClearList->LineY = LockedExtraClearLineY;
   LockedExtraItems->Add(ClearList, FDIR_DOWN);
 
   // Tips secondary Extra menu button
   Tips = new TitleButton(1, MenuEntriesSprites[10], MenuEntriesHSprites[10],
                          SecondaryItemHighlightSprite,
-                         glm::vec2(SecondaryItemX, ItemMovieLibraryY));
-  Tips->OnClickHandler = secondaryOnClick;
+                         glm::vec2(SecondaryItemX, LockedExtraTipsY));
+  if (!LockedExtraSubmenuHandledByUI) Tips->OnClickHandler = secondaryOnClick;
   Tips->IsSubButton = true;
   Tips->LineDecoration = LineSprites[3];
-  Tips->LineY = SecondaryMenuExtraMovieY;
+  Tips->LineY = LockedExtraTipsLineY;
   LockedExtraItems->Add(Tips, FDIR_DOWN);
 
   // Trophy secondary Extra menu button
-  Trophy = new TitleButton(2, MenuEntriesSprites[11], MenuEntriesHSprites[11],
-                           SecondaryItemHighlightSprite,
-                           glm::vec2(SecondaryItemX, ItemTipsY));
-  Trophy->OnClickHandler = secondaryOnClick;
-  Trophy->IsSubButton = true;
-  Trophy->LineDecoration = LineSprites[4];
-  Trophy->LineY = SecondaryMenuExtraTipsY;
-  LockedExtraItems->Add(Trophy, FDIR_DOWN);
+  if (LockedExtraEntriesNum > 2) {
+    Trophy = new TitleButton(2, MenuEntriesSprites[11], MenuEntriesHSprites[11],
+                             SecondaryItemHighlightSprite,
+                             glm::vec2(SecondaryItemX, ItemTipsY));
+    Trophy->OnClickHandler = secondaryOnClick;
+    Trophy->IsSubButton = true;
+    Trophy->LineDecoration = LineSprites[4];
+    Trophy->LineY = SecondaryMenuExtraTipsY;
+    LockedExtraItems->Add(Trophy, FDIR_DOWN);
+  }
 
   // Unlocked Extra Menus
 
@@ -320,6 +341,7 @@ void TitleMenu::Hide() {
   if (State != Hidden) {
     State = Hidden;
     LoadSubmenuOpen = false;
+    LockedExtraSubmenuOpen = false;
     if (LastFocusedMenu != 0) {
       UI::FocusedMenu = LastFocusedMenu;
       LastFocusedMenu->IsFocused = true;
@@ -328,6 +350,9 @@ void TitleMenu::Hide() {
     }
     IsFocused = false;
 
+    if (LockedExtraSubmenuHandledByUI &&
+        LockedExtraItems->VisibilityState != Hidden)
+      LockedExtraItems->Hide();
     MainItems->Hide();
     LoadItems->Hide();
     SystemItems->Hide();
@@ -404,6 +429,16 @@ void TitleMenu::Update(float dt) {
     LoadSubmenuOpen = false;
     CurrentlyFocusedElement = Load;
     Load->HasFocus = true;
+    MainItems->HasFocus = true;
+    PADinputButtonWentDown &= ~PAD1B;
+    PADinputMouseWentDown &= ~PAD1B;
+  }
+  if (LockedExtraSubmenuOpen &&
+      ((PADinputButtonWentDown | PADinputMouseWentDown) & PAD1B)) {
+    LockedExtraItems->Hide();
+    LockedExtraSubmenuOpen = false;
+    CurrentlyFocusedElement = Extra;
+    Extra->HasFocus = true;
     MainItems->HasFocus = true;
     PADinputButtonWentDown &= ~PAD1B;
     PADinputMouseWentDown &= ~PAD1B;
@@ -713,6 +748,7 @@ void TitleMenu::Render() {
         case TitleDispCtState::MainEntriesControl: {
           DrawTitleMenuBackGraphics();
           if (LoadSubmenuOpen) LoadItems->Render();
+          if (LockedExtraSubmenuOpen) LockedExtraItems->Render();
           MainItems->Render();
           if (MainGuideSprite.Bounds.Width > 0.0f) {
             Renderer->DrawSprite(MainGuideSprite, MainGuidePosition);

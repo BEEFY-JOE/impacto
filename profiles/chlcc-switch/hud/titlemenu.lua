@@ -35,6 +35,8 @@ root.TitleMenu.MenuEntriesNum = 15;
 root.TitleMenu.MainGuideSprite = "TitleMenuGuide";
 root.TitleMenu.MainGuidePosition = { X = 1335, Y = 977 };
 root.TitleMenu.LoadSubmenuHandledByUI = true;
+root.TitleMenu.LockedExtraSubmenuHandledByUI = true;
+root.TitleMenu.LockedExtraEntriesNum = 2;
 root.TitleMenu.SecondaryItemX = 480;
 root.TitleMenu.ItemLoadQuickY = 125;
 root.TitleMenu.ItemLoadY = 164;
@@ -42,6 +44,10 @@ root.TitleMenu.SecondaryItemHighlightX = 427;
 root.TitleMenu.SecondaryMenuLineX = 353;
 root.TitleMenu.SecondaryMenuLoadLineY = 140;
 root.TitleMenu.SecondaryMenuLoadQuickLineY = 177;
+root.TitleMenu.LockedExtraClearListY = 185;
+root.TitleMenu.LockedExtraTipsY = 224;
+root.TitleMenu.LockedExtraClearLineY = 199;
+root.TitleMenu.LockedExtraTipsLineY = 237;
 
 local mainEntryNormalY = { 187, 225, 263, 300 };
 local mainEntryFocusedY = { 0, 37, 75, 112 };
@@ -60,6 +66,18 @@ for i = 0, 1 do
     };
     root.Sprites["TitleMenuEntryHighlighted" .. (i + 4)].Bounds = {
         X = 1725, Y = 1026 + 33 * i, Width = 325, Height = 31
+    };
+end
+
+for _, entry in ipairs({
+    { Index = 6, RowY = 1092 },
+    { Index = 10, RowY = 1224 }
+}) do
+    root.Sprites["TitleMenuEntry" .. entry.Index].Bounds = {
+        X = 2052, Y = entry.RowY, Width = 325, Height = 31
+    };
+    root.Sprites["TitleMenuEntryHighlighted" .. entry.Index].Bounds = {
+        X = 1725, Y = entry.RowY, Width = 325, Height = 31
     };
 end
 
