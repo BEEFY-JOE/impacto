@@ -38,3 +38,4 @@ include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/sprites.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/font.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/titlemenu.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/sysmesboxdisplay.lua');
+include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/saveicon.lua');
