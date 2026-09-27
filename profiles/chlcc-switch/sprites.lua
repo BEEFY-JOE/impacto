@@ -1,5 +1,3 @@
--- Mappings are from program1 system_swi.mpk names and PNG IHDR dimensions.
--- Atlas sprite bounds inherited from the PS3 profile remain provisional.
 root.SpriteSheets = {
     ["CG"] = {
         Path = { Mount = "system", Id = 0 },
@@ -31,7 +29,6 @@ root.SpriteSheets = {
         DesignWidth = 3072,
         DesignHeight = 1536
     },
-    -- Highlights and the Delusion/Trophy sheet mappings remain provisional.
     ["Highlights"] = {
         Path = { Mount = "system", Id = 20 },
         DesignWidth = 3072,
@@ -62,7 +59,6 @@ root.SpriteSheets = {
         DesignWidth = 4096,
         DesignHeight = 10403
     },
-    -- Stock CHLCC's LanguageBarrier font retains these resource sheets.
     ["FontLBForeground"] = {
         Path = "resources/chlcc/font-lb/foreground.png",
         DesignWidth = 4096,

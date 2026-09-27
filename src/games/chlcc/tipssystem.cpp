@@ -46,9 +46,8 @@ void TipsSystem::DataInit(uint32_t scriptBufferId, uint32_t tipsDataAdr,
   MemoryStream stream =
       MemoryStream(&scriptBuffer[tipsDataAdr], tipsDataSize, false);
   uint16_t numberOfContentStrings = ReadLE<uint16_t>(&stream);
-  // Switch CHLCC stores 32-bit MSB IDs directly after the count, with one
-  // additional string ID per record compared with the older CHLCC layout.
-  const bool switchFormat =
+  // CHLCC Switch records omit padding and add one string.
+  const bool isSwitchFormat =
       Profile::Vm::GameInstructionSet == InstructionSet::LCCSwitch;
   auto& buffers = Profile::Vm::UseMsbStrings ? Impacto::Vm::MsbBuffers
                                              : Impacto::Vm::ScriptBuffers;
@@ -65,11 +64,11 @@ void TipsSystem::DataInit(uint32_t scriptBufferId, uint32_t tipsDataAdr,
         .IsUnread = true,
         .IsNew = true,
     };
-    if (!switchFormat) {
+    if (!isSwitchFormat) {
       ReadLE<uint16_t>(&stream);  // Older CHLCC padding space string.
     }
     for (uint16_t i = 0;
-         i < record.NumberOfContentStrings + (switchFormat ? 4 : 3); i++) {
+         i < record.NumberOfContentStrings + (isSwitchFormat ? 4 : 3); i++) {
       uint32_t stringId = Profile::Vm::StringIdSize == 4
                               ? ReadLE<uint32_t>(&stream)
                               : ReadLE<uint16_t>(&stream);

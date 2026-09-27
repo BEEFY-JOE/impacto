@@ -36,8 +36,9 @@ VmInstruction(InstCreateSurf) {
 VmInstruction(InstReleaseSurf) {
   const uint32_t instructionStartIp = thread->IpOffset;
   StartInstruction;
-  const bool chlccSwitch = Profile::Game::PlatformId == 0x100000 &&
-                           Profile::TitleMenu::Type == UI::TitleMenuType::CHLCC;
+  const bool chlccSwitch =
+      Profile::Vm::GameInstructionSet == InstructionSet::LCCSwitch &&
+      Profile::TitleMenu::Type == UI::TitleMenuType::CHLCC;
   uint8_t unresolvedType = 0;
   if (chlccSwitch) {
     PopUint8(type);

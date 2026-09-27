@@ -76,12 +76,11 @@ using namespace Profile::ScriptVars;
 
 namespace Game {
 
-// LCCSwitch is shared by both Double Pack games. These rendering rules are
-// specific to CHAOS;CHILD and reference its script variables and UI objects.
 static bool UsesCCRenderingRules() {
   return Profile::Vm::GameInstructionSet == Vm::InstructionSet::CC ||
          (Profile::Vm::GameInstructionSet == Vm::InstructionSet::LCCSwitch &&
-          Profile::GameSpecific::GameSpecificType == UI::GameSpecificType::CCLCC);
+          Profile::GameSpecific::GameSpecificType ==
+              UI::GameSpecificType::CCLCC);
 }
 
 void Init() {
@@ -649,8 +648,7 @@ void Render() {
           }
 
           // System menu capture
-          if (UsesCCRenderingRules() &&
-              GetFlag(SF_SYSTEMMENUCAPTURE)) {
+          if (UsesCCRenderingRules() && GetFlag(SF_SYSTEMMENUCAPTURE)) {
             Renderer->CaptureScreencap(
                 static_cast<UI::CCLCC::SystemMenu*>(UI::SystemMenuPtr)
                     ->ScreenCap);
@@ -665,10 +663,9 @@ void Render() {
           break;
         }
         case DrawComponentType::Main: {
-          if (UsesCCRenderingRules() &&
-              !(!GetFlag(SF_SELECTMODE) ||
-                (GetFlag(SF_SYSTEMMENUCAPTURE) &&
-                 ScrWork[SW_RESTARTMASK] != 0x100))) {
+          if (UsesCCRenderingRules() && !(!GetFlag(SF_SELECTMODE) ||
+                                          (GetFlag(SF_SYSTEMMENUCAPTURE) &&
+                                           ScrWork[SW_RESTARTMASK] != 0x100))) {
             break;
           }
           RenderMain();

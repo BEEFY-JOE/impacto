@@ -61,7 +61,8 @@ void NonGameplayUpdate(float dt) {
   switch (Profile::GameSpecific::GameSpecificType) {
     case GameSpecificType::CHLCC: {
       if (UI ::TitleMenuPtr) {
-        if (Profile::Game::PlatformId == 0x100000) {
+        if (Profile::Vm::GameInstructionSet ==
+            Impacto::Vm::InstructionSet::LCCSwitch) {
           static bool logged = false;
           if (!logged) {
             ImpLog(
@@ -181,7 +182,8 @@ void RenderLayer(uint32_t layer) {
         CHLCC::BubblesEffect::GetInstance().Render();
       }
 
-      if (Profile::Game::PlatformId == 0x100000) {
+      if (Profile::Vm::GameInstructionSet ==
+          Impacto::Vm::InstructionSet::LCCSwitch) {
         static bool loggedLayerZero = false;
         static bool loggedPriorityLayer = false;
         static int previousTitleMode = -1;
@@ -215,7 +217,8 @@ void RenderLayer(uint32_t layer) {
       }
       if (GetFlag(SF_TITLEMODE) && ScrWork[SW_TITLE_PRI] == layerInt) {
         if (UI ::TitleMenuPtr) {
-          if (Profile::Game::PlatformId == 0x100000) {
+          if (Profile::Vm::GameInstructionSet ==
+              Impacto::Vm::InstructionSet::LCCSwitch) {
             static bool logged = false;
             if (!logged) {
               ImpLog(LogLevel::Info, LogChannel::General,

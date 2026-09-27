@@ -535,7 +535,7 @@ VmInstruction(InstTitleMenuNew) {
   StartInstruction;
   PopUint8(type);
   const bool diagnoseCHLCCSwitch =
-      Profile::Game::PlatformId == 0x100000 &&
+      Profile::Vm::GameInstructionSet == InstructionSet::LCCSwitch &&
       Profile::TitleMenu::Type == UI::TitleMenuType::CHLCC;
   const auto logTitleGate = [&](int gateId, const char* gate) {
     if (!diagnoseCHLCCSwitch) return;
@@ -544,7 +544,7 @@ VmInstruction(InstTitleMenuNew) {
         type,
         static_cast<int>(thread->ScriptBufferId),
         static_cast<int>(thread->IpOffset - 3),
-        ScrWork[2116],
+        ScrWork[SW_TITLEMOVIECT],
         ScrWork[SW_TITLEMODE],
         ScrWork[SW_TITLEDISPCT],
         ScrWork[SW_TITLECUR1],
@@ -558,15 +558,17 @@ VmInstruction(InstTitleMenuNew) {
     static std::array<int, 12> previous;
     static bool logged = false;
     if (logged && snapshot == previous) return;
-    ImpLog(LogLevel::Info, LogChannel::General,
-           "CHLCC TITLE DIAG TitleOpcodeNew subtype={} script={} ip=0x{:x} "
-           "phase[2116]={} SW_TITLEMODE[{}]={} SW_TITLEDISPCT[{}]={} "
-           "SW_TITLECUR1[{}]={} ChoiceMade={} AllowsScriptInput={} "
-           "PAD1AButton={} PAD1AMouse={} gate={}\n",
-           type, thread->ScriptBufferId, thread->IpOffset - 3, ScrWork[2116],
-           SW_TITLEMODE, ScrWork[SW_TITLEMODE], SW_TITLEDISPCT,
-           ScrWork[SW_TITLEDISPCT], SW_TITLECUR1, ScrWork[SW_TITLECUR1],
-           snapshot[7], snapshot[8], snapshot[9], snapshot[10], gate);
+    ImpLog(
+        LogLevel::Info, LogChannel::General,
+        "CHLCC TITLE DIAG TitleOpcodeNew subtype={} script={} ip=0x{:x} "
+        "phase[SW_TITLEMOVIECT]={} SW_TITLEMODE[{}]={} SW_TITLEDISPCT[{}]={} "
+        "SW_TITLECUR1[{}]={} ChoiceMade={} AllowsScriptInput={} "
+        "PAD1AButton={} PAD1AMouse={} gate={}\n",
+        type, thread->ScriptBufferId, thread->IpOffset - 3,
+        ScrWork[SW_TITLEMOVIECT], SW_TITLEMODE, ScrWork[SW_TITLEMODE],
+        SW_TITLEDISPCT, ScrWork[SW_TITLEDISPCT], SW_TITLECUR1,
+        ScrWork[SW_TITLECUR1], snapshot[7], snapshot[8], snapshot[9],
+        snapshot[10], gate);
     previous = snapshot;
     logged = true;
   };
@@ -584,15 +586,17 @@ VmInstruction(InstTitleMenuNew) {
       }
       break;
     case 1:  // Main
-      if (diagnoseCHLCCSwitch && ScrWork[2116] == 10 &&
+      if (diagnoseCHLCCSwitch && ScrWork[SW_TITLEMOVIECT] == 10 &&
           UI::TitleMenuPtr != nullptr && UI::TitleMenuPtr->ChoiceMade &&
           ScrWork[SW_TITLECUR1] == 0) {
         UI::TitleMenuPtr->ChoiceMade = false;
         SetFlag(2050, true);
         ImpLog(LogLevel::Info, LogChannel::General,
-               "CHLCC TITLE DIAG TitleStartHandshake subtype={} phase[2116]={} "
+               "CHLCC TITLE DIAG TitleStartHandshake subtype={} "
+               "phase[SW_TITLEMOVIECT]={} "
                "SW_TITLECUR1[{}]={} ChoiceMade=true->false flag[2050]=true\n",
-               type, ScrWork[2116], SW_TITLECUR1, ScrWork[SW_TITLECUR1]);
+               type, ScrWork[SW_TITLEMOVIECT], SW_TITLECUR1,
+               ScrWork[SW_TITLECUR1]);
       }
       switch (Profile::Vm::GameInstructionSet) {
         default:

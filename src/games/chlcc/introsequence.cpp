@@ -2,6 +2,7 @@
 #include "../../renderer/renderer.h"
 #include "../../log.h"
 #include "../../profile/game.h"
+#include "../../profile/vm.h"
 #include "../../profile/games/chlcc/titlemenu.h"
 #include "../../background2d.h"
 #include "../../audio/audiosystem.h"
@@ -146,7 +147,8 @@ void IntroSequence::Render() {
     DrawBackground();
 
     // Draw the new background with the mask
-    if (PlatformId == 0x100000) {
+    if (Profile::Vm::GameInstructionSet ==
+        Impacto::Vm::InstructionSet::LCCSwitch) {
       static bool logged = false;
       if (!logged) {
         ImpLog(
@@ -200,7 +202,8 @@ void IntroSequence::DrawBackground() const {
   glm::vec2 designDimensions(DesignWidth, DesignHeight);
 
   Renderer->DrawQuad(RectF{0, 0, DesignWidth, DesignHeight}, glm::vec4(1.0f));
-  if (PlatformId == 0x100000) {
+  if (Profile::Vm::GameInstructionSet ==
+      Impacto::Vm::InstructionSet::LCCSwitch) {
     const float alpha = PanningAnimation.Progress;
     const int alphaBand = alpha <= 0.0f ? 0 : alpha >= 1.0f ? 2 : 1;
     static int previousAlphaBand = -1;

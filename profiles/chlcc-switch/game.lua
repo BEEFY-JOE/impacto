@@ -1,8 +1,7 @@
--- Experimental profile for LCC Double Pack program1 assets.
 include(root.BasePaths.RootProfilesDir .. '/chlcc/game.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/scriptvars.lua');
 
-root.WindowName = "CHAOS;HEAD Love Chu☆Chu! (Switch, experimental)";
+root.WindowName = "CHAOS;HEAD Love Chu☆Chu! (Switch)";
 root.DesignWidth = 1920;
 root.DesignHeight = 1080;
 root.CharaIsMvl = true;
@@ -11,10 +10,7 @@ root.LayFileTexXMultiplier = 1;
 root.LayFileTexYMultiplier = 1;
 root.PlatformId = 0x100000;
 
--- These VM settings are shared by the Double Pack's Switch SC3 format.
--- The LCCSwitch opcode table still has CCLCC-specific user opcodes; startup
--- testing must determine where a CHLCC-specific Switch table is needed.
-root.Vm.StartScript = 1; -- script.cls: _startup
+root.Vm.StartScript = 1;
 root.Vm.GameInstructionSet = InstructionSet.LCCSwitch;
 root.Vm.UseMsbStrings = true;
 root.Vm.UseSeparateMsbArchive = true;
@@ -36,6 +32,6 @@ root.Vm.MaxLinkedBgBuffers = 2;
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/vfs.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/sprites.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/font.lua');
+include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/saveicon.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/titlemenu.lua');
 include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/sysmesboxdisplay.lua');
-include(root.BasePaths.RootProfilesDir .. '/chlcc-switch/hud/saveicon.lua');

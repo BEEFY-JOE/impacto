@@ -13,6 +13,7 @@
 #include "../../background2d.h"
 #include "../../log.h"
 #include "../../profile/game.h"
+#include "../../profile/vm.h"
 #include "../../profile/patch.h"
 #include <magic_enum/magic_enum.hpp>
 #include <array>
@@ -32,8 +33,6 @@ using namespace Impacto::Vm::Interface;
 
 using namespace Impacto::UI::Widgets::CHLCC;
 
-constexpr int SwitchTitlePhaseWork = 2116;
-
 void TitleMenu::MenuButtonOnClick(Widgets::Button* target) {
   const int previousChoice = ScrWork[SW_TITLECUR1];
   const bool choiceMadeBefore = ChoiceMade;
@@ -43,15 +42,16 @@ void TitleMenu::MenuButtonOnClick(Widgets::Button* target) {
   ChoiceMade = true;
   // disable focus immediately, so MainItems couldn't get stuck being hovered
   MainItems->HasFocus = false;
-  if (Profile::Game::PlatformId == 0x100000) {
+  if (Profile::Vm::GameInstructionSet ==
+      Impacto::Vm::InstructionSet::LCCSwitch) {
     ImpLog(LogLevel::Info, LogChannel::General,
            "CHLCC TITLE DIAG MainButtonClick id={} SW_TITLECUR1[{}]={}->{} "
            "ChoiceMade={}->{} MainItemsFocus={}->{} phase[{}]={} "
            "SW_TITLECT[{}]={} input={}\n",
            target->Id, SW_TITLECUR1, previousChoice, ScrWork[SW_TITLECUR1],
            choiceMadeBefore, ChoiceMade, mainItemsFocusBefore,
-           MainItems->HasFocus, SwitchTitlePhaseWork,
-           ScrWork[SwitchTitlePhaseWork], SW_TITLECT, ScrWork[SW_TITLECT],
+           MainItems->HasFocus, SW_TITLEMOVIECT, ScrWork[SW_TITLEMOVIECT],
+           SW_TITLECT, ScrWork[SW_TITLECT],
            magic_enum::enum_name(Input::CurrentInputDevice));
   }
 }
@@ -319,11 +319,12 @@ void TitleMenu::ResetIntroSequence() {
 }
 
 TitleDispCtState TitleMenu::ResolveTitleDispCtState() {
-  if (Profile::Game::PlatformId != 0x100000) {
+  if (Profile::Vm::GameInstructionSet !=
+      Impacto::Vm::InstructionSet::LCCSwitch) {
     return static_cast<TitleDispCtState>(ScrWork[SW_TITLEDISPCT]);
   }
 
-  const int phase = ScrWork[SwitchTitlePhaseWork];
+  const int phase = ScrWork[SW_TITLEMOVIECT];
   const bool phaseChanged = phase != CurrentSwitchTitlePhase;
   if (phaseChanged) {
     PreviousSwitchTitlePhase = CurrentSwitchTitlePhase;
@@ -364,7 +365,7 @@ TitleDispCtState TitleMenu::ResolveTitleDispCtState() {
            "CHLCC TITLE DIAG Translator phase[{}]={} predecessor={} "
            "SW_TITLECT[{}]={} presentation={} MainItemsVisibility={} "
            "MainItemsFocus={}\n",
-           SwitchTitlePhaseWork, phase, PreviousSwitchTitlePhase, SW_TITLECT,
+           SW_TITLEMOVIECT, phase, PreviousSwitchTitlePhase, SW_TITLECT,
            ScrWork[SW_TITLECT], stateName,
            static_cast<int>(MainItems->VisibilityState), MainItems->HasFocus);
     LastResolvedSwitchTitleState = state;
@@ -375,12 +376,14 @@ TitleDispCtState TitleMenu::ResolveTitleDispCtState() {
 void TitleMenu::Update(float dt) {
   const auto presentationState = ResolveTitleDispCtState();
   const bool allowTitleInput =
-      Profile::Game::PlatformId != 0x100000 ||
+      Profile::Vm::GameInstructionSet !=
+          Impacto::Vm::InstructionSet::LCCSwitch ||
       presentationState != TitleDispCtState::Unresolved;
-  if (Profile::Game::PlatformId == 0x100000) {
+  if (Profile::Vm::GameInstructionSet ==
+      Impacto::Vm::InstructionSet::LCCSwitch) {
     const int displayCt = ScrWork[SW_TITLEDISPCT];
     const int titleCt = ScrWork[SW_TITLECT];
-    const int raw2116 = ScrWork[2116];
+    const int switchTitlePhase = ScrWork[SW_TITLEMOVIECT];
     const int menuCt = ScrWork[SW_MENUCT];
     const int maskAlpha = ScrWork[SW_TITLEMASKALPHA];
     const std::array<int, 12> snapshot = {
@@ -394,7 +397,7 @@ void TitleMenu::Update(float dt) {
         : titleCt == 32  ? 32
         : titleCt == 934 ? 934
                          : 1,
-        raw2116,
+        switchTitlePhase,
         menuCt == 0   ? 0
         : menuCt < 64 ? 1
                       : 64,
@@ -409,20 +412,21 @@ void TitleMenu::Update(float dt) {
     static std::array<int, 12> previous;
     static bool logged = false;
     if (!logged || snapshot != previous) {
-      ImpLog(LogLevel::Info, LogChannel::General,
-             "CHLCC TITLE DIAG Update State={} SF_TITLEMODE[{}]={} "
-             "SW_TITLEDISPCT[{}]={} SW_TITLECT[{}]={} ScrWork[2116]={} "
-             "SW_MENUCT[{}]={} "
-             "SW_TITLEMASKALPHA[{}]={} SW_TITLEMASKCOLOR[{}]={} "
-             "SW_TITLECUR1[{}]={} IntroState={} FallingStarsState={} "
-             "FallingStarsIsIn={}\n",
-             static_cast<int>(State), SF_TITLEMODE, GetFlag(SF_TITLEMODE),
-             SW_TITLEDISPCT, displayCt, SW_TITLECT, titleCt, raw2116, SW_MENUCT,
-             menuCt, SW_TITLEMASKALPHA, maskAlpha, SW_TITLEMASKCOLOR,
-             ScrWork[SW_TITLEMASKCOLOR], SW_TITLECUR1, ScrWork[SW_TITLECUR1],
-             static_cast<int>(IntroSequence.IntroAnimation.State),
-             static_cast<int>(IntroSequence.FallingStarsAnimation.State),
-             IntroSequence.FallingStarsAnimation.IsIn());
+      ImpLog(
+          LogLevel::Info, LogChannel::General,
+          "CHLCC TITLE DIAG Update State={} SF_TITLEMODE[{}]={} "
+          "SW_TITLEDISPCT[{}]={} SW_TITLECT[{}]={} ScrWork[SW_TITLEMOVIECT]={} "
+          "SW_MENUCT[{}]={} "
+          "SW_TITLEMASKALPHA[{}]={} SW_TITLEMASKCOLOR[{}]={} "
+          "SW_TITLECUR1[{}]={} IntroState={} FallingStarsState={} "
+          "FallingStarsIsIn={}\n",
+          static_cast<int>(State), SF_TITLEMODE, GetFlag(SF_TITLEMODE),
+          SW_TITLEDISPCT, displayCt, SW_TITLECT, titleCt, switchTitlePhase,
+          SW_MENUCT, menuCt, SW_TITLEMASKALPHA, maskAlpha, SW_TITLEMASKCOLOR,
+          ScrWork[SW_TITLEMASKCOLOR], SW_TITLECUR1, ScrWork[SW_TITLECUR1],
+          static_cast<int>(IntroSequence.IntroAnimation.State),
+          static_cast<int>(IntroSequence.FallingStarsAnimation.State),
+          IntroSequence.FallingStarsAnimation.IsIn());
       previous = snapshot;
       logged = true;
     }
@@ -601,7 +605,8 @@ void TitleMenu::Update(float dt) {
 
 void TitleMenu::Render() {
   const auto presentationState = ResolveTitleDispCtState();
-  if (Profile::Game::PlatformId == 0x100000) {
+  if (Profile::Vm::GameInstructionSet ==
+      Impacto::Vm::InstructionSet::LCCSwitch) {
     const int displayState = ScrWork[SW_TITLEDISPCT];
     const int branch = presentationState == TitleDispCtState::Unresolved
                            ? -1
@@ -628,7 +633,8 @@ void TitleMenu::Render() {
       switch (presentationState) {
         case TitleDispCtState::IntroAnimation: {
           if (IntroSequence.FallingStarsAnimation.IsIn()) {
-            if (Profile::Game::PlatformId == 0x100000) {
+            if (Profile::Vm::GameInstructionSet ==
+                Impacto::Vm::InstructionSet::LCCSwitch) {
               static bool logged = false;
               if (!logged) {
                 ImpLog(LogLevel::Info, LogChannel::General,
@@ -703,7 +709,8 @@ void TitleMenu::Render() {
     int maskAlpha = ScrWork[SW_TITLEMASKALPHA];
     glm::vec4 col = ScrWorkGetColor(SW_TITLEMASKCOLOR);
     col.a = glm::min(maskAlpha / 255.0f, 1.0f);
-    if (Profile::Game::PlatformId == 0x100000) {
+    if (Profile::Vm::GameInstructionSet ==
+        Impacto::Vm::InstructionSet::LCCSwitch) {
       const int alphaBand = maskAlpha == 0 ? 0 : maskAlpha >= 255 ? 255 : 1;
       const std::array<int, 2> snapshot = {alphaBand,
                                            ScrWork[SW_TITLEMASKCOLOR]};
@@ -742,7 +749,8 @@ void TitleMenu::DrawSpinningCircle(float alpha) const {
 }
 
 void TitleMenu::DrawTitleMenuBackGraphics() const {
-  if (Profile::Game::PlatformId == 0x100000) {
+  if (Profile::Vm::GameInstructionSet ==
+      Impacto::Vm::InstructionSet::LCCSwitch) {
     static bool logged = false;
     if (!logged) {
       ImpLog(LogLevel::Info, LogChannel::General,
