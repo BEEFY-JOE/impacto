@@ -92,7 +92,20 @@ TitleMenu::TitleMenu() {
                          ItemHighlightSprite,
                          glm::vec2(ItemHighlightOffset.x - 1.0f,
                                    ItemYBase - 1.0f + 1 * ItemPadding));
-  Load->OnClickHandler = onClick;
+  if (LoadSubmenuHandledByUI) {
+    Load->OnClickHandler = [this](auto* btn) {
+      btn->Hovered = false;
+      LoadSubmenuOpen = true;
+      MainItems->HasFocus = false;
+      LoadItems->Show();
+      CurrentlyFocusedElement = QuickLoad;
+      QuickLoad->HasFocus = true;
+      Load->HasFocus = true;
+      SecondaryFadeAnimation.StartIn(true);
+    };
+  } else {
+    Load->OnClickHandler = onClick;
+  }
   MainItems->Add(Load, FDIR_DOWN);
 
   // Extra menu button
@@ -111,12 +124,21 @@ TitleMenu::TitleMenu() {
   System->OnClickHandler = onClick;
   MainItems->Add(System, FDIR_DOWN);
 
+  const bool hasHelp = MenuEntriesNum > 14;
+  if (hasHelp) {
+    auto* help = new TitleButton(4, MenuEntriesSprites[14],
+                                 MenuEntriesHSprites[14], ItemHighlightSprite,
+                                 glm::vec2(ItemHighlightOffset.x - 1.0f,
+                                           ItemYBase - 1.0f + 4 * ItemPadding));
+    MainItems->Add(help, FDIR_DOWN);
+  }
+
   // Exit menu button (Configuration/Patch driven)
   if (Patch::HasScriptedExitLogic) {
-    auto* const exitPtr =
-        new TitleButton(4, ExitSprite, ExitHighlightSprite, ItemHighlightSprite,
-                        glm::vec2(ItemHighlightOffset.x - 1.0f,
-                                  ItemYBase - 1.0f + 4 * ItemPadding));
+    auto* const exitPtr = new TitleButton(
+        hasHelp ? 5 : 4, ExitSprite, ExitHighlightSprite, ItemHighlightSprite,
+        glm::vec2(ItemHighlightOffset.x - 1.0f,
+                  ItemYBase - 1.0f + (hasHelp ? 5 : 4) * ItemPadding));
     exitPtr->OnClickHandler = [this](auto* btn) {
       return ExitButtonOnClick(btn);
     };
@@ -129,7 +151,7 @@ TitleMenu::TitleMenu() {
   QuickLoad = new TitleButton(0, MenuEntriesSprites[4], MenuEntriesHSprites[4],
                               SecondaryItemHighlightSprite,
                               glm::vec2(SecondaryItemX, ItemLoadQuickY));
-  QuickLoad->OnClickHandler = secondaryOnClick;
+  if (!LoadSubmenuHandledByUI) QuickLoad->OnClickHandler = secondaryOnClick;
   QuickLoad->IsSubButton = true;
   QuickLoad->LineDecoration = LineSprites[2];
   QuickLoad->LineY = SecondaryMenuLoadLineY;
@@ -139,7 +161,7 @@ TitleMenu::TitleMenu() {
   SubLoad = new TitleButton(1, MenuEntriesSprites[5], MenuEntriesHSprites[5],
                             SecondaryItemHighlightSprite,
                             glm::vec2(SecondaryItemX, ItemLoadY));
-  SubLoad->OnClickHandler = secondaryOnClick;
+  if (!LoadSubmenuHandledByUI) SubLoad->OnClickHandler = secondaryOnClick;
   SubLoad->IsSubButton = true;
   SubLoad->LineDecoration = LineSprites[3];
   SubLoad->LineY = SecondaryMenuLoadQuickLineY;
@@ -297,6 +319,7 @@ void TitleMenu::Show() {
 void TitleMenu::Hide() {
   if (State != Hidden) {
     State = Hidden;
+    LoadSubmenuOpen = false;
     if (LastFocusedMenu != 0) {
       UI::FocusedMenu = LastFocusedMenu;
       LastFocusedMenu->IsFocused = true;
@@ -375,6 +398,16 @@ TitleDispCtState TitleMenu::ResolveTitleDispCtState() {
 
 void TitleMenu::Update(float dt) {
   const auto presentationState = ResolveTitleDispCtState();
+  if (LoadSubmenuOpen &&
+      ((PADinputButtonWentDown | PADinputMouseWentDown) & PAD1B)) {
+    LoadItems->Hide();
+    LoadSubmenuOpen = false;
+    CurrentlyFocusedElement = Load;
+    Load->HasFocus = true;
+    MainItems->HasFocus = true;
+    PADinputButtonWentDown &= ~PAD1B;
+    PADinputMouseWentDown &= ~PAD1B;
+  }
   const bool allowTitleInput =
       Profile::Vm::GameInstructionSet !=
           Impacto::Vm::InstructionSet::LCCSwitch ||
@@ -679,7 +712,11 @@ void TitleMenu::Render() {
         } break;
         case TitleDispCtState::MainEntriesControl: {
           DrawTitleMenuBackGraphics();
+          if (LoadSubmenuOpen) LoadItems->Render();
           MainItems->Render();
+          if (MainGuideSprite.Bounds.Width > 0.0f) {
+            Renderer->DrawSprite(MainGuideSprite, MainGuidePosition);
+          }
         } break;
         case TitleDispCtState::LoadSubEntriesFading:
         case TitleDispCtState::LoadSubEntriesControl: {

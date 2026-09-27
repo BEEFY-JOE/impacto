@@ -18,6 +18,9 @@ int constexpr LineEntriesNumMax = 32;
 inline Sprite LineSprites[LineEntriesNumMax];
 
 inline Sprite BackgroundSprite;
+inline Sprite MainGuideSprite;
+inline glm::vec2 MainGuidePosition;
+inline bool LoadSubmenuHandledByUI = false;
 
 inline Sprite DelusionADVUnderSprite;
 inline Sprite DelusionADVSprite;

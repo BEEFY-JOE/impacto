@@ -79,6 +79,7 @@ class TitleMenu : public Menu {
 
   void ResetIntroSequence();
   TitleDispCtState ResolveTitleDispCtState();
+  bool LoadSubmenuOpen = false;
   int CurrentSwitchTitlePhase = -1;
   int PreviousSwitchTitlePhase = -1;
   TitleDispCtState LastResolvedSwitchTitleState = TitleDispCtState::Unresolved;

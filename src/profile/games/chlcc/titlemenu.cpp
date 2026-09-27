@@ -20,6 +20,11 @@ void Configure() {
   }
 
   BackgroundSprite = EnsureGetMember<Sprite>("BackgroundSprite");
+  if (TryGetMember<Sprite>("MainGuideSprite", MainGuideSprite)) {
+    MainGuidePosition = EnsureGetMember<glm::vec2>("MainGuidePosition");
+  }
+  LoadSubmenuHandledByUI =
+      TryGetMember<bool>("LoadSubmenuHandledByUI").value_or(false);
   DelusionADVUnderSprite = EnsureGetMember<Sprite>("DelusionADVUnderSprite");
   DelusionADVSprite = EnsureGetMember<Sprite>("DelusionADVSprite");
   DelusionADVPosition = EnsureGetMember<glm::vec2>("DelusionADVPosition");
