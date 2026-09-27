@@ -28,6 +28,90 @@ root.TitleMenu.LCCLogoUnderPosition = { X = 363, Y = 495 };
 root.TitleMenu.StarLogoPosition = { X = 698, Y = 522 };
 root.TitleMenu.CopyrightTextPosition = { X = 112, Y = 996 };
 root.TitleMenu.SpinningCirclePosition = { X = 915.75, Y = -428.25 };
+root.TitleMenu.ItemHighlightOffset = { X = 111, Y = 5 };
+root.TitleMenu.ItemYBase = 103;
+root.TitleMenu.ItemPadding = 60;
+root.TitleMenu.MenuEntriesNum = 15;
+root.TitleMenu.HasHelpMainEntry = true;
+root.TitleMenu.StartMainEntryPresentationOnly = true;
+root.TitleMenu.ConfigMainEntryPresentationOnly = true;
+root.TitleMenu.MainGuideSprite = "TitleMenuGuide";
+root.TitleMenu.MainGuidePosition = { X = 1335, Y = 977 };
+root.TitleMenu.LoadSubmenuHandledByUI = true;
+root.TitleMenu.LockedExtraSubmenuHandledByUI = true;
+root.TitleMenu.LockedExtraHasTrophy = false;
+root.TitleMenu.SecondaryItemX = 480;
+root.TitleMenu.ItemLoadQuickY = 125;
+root.TitleMenu.ItemLoadY = 164;
+root.TitleMenu.SecondaryItemHighlightX = 427;
+root.TitleMenu.SecondaryMenuLineX = 353;
+root.TitleMenu.SecondaryMenuLoadLineY = 140;
+root.TitleMenu.SecondaryMenuLoadQuickLineY = 177;
+root.TitleMenu.LockedExtraClearListY = 185;
+root.TitleMenu.LockedExtraTipsY = 224;
+root.TitleMenu.LockedExtraClearLineY = 199;
+root.TitleMenu.LockedExtraTipsLineY = 237;
+
+local mainEntryNormalY = { 187, 225, 263, 300 };
+local mainEntryFocusedY = { 0, 37, 75, 112 };
+for i = 0, 3 do
+    root.Sprites["TitleMenuEntry" .. i].Bounds = {
+        X = 1727, Y = mainEntryNormalY[i + 1], Width = 187, Height = 36
+    };
+    root.Sprites["TitleMenuEntryHighlighted" .. i].Bounds = {
+        X = 1727, Y = mainEntryFocusedY[i + 1], Width = 187, Height = 36
+    };
+end
+
+for i = 0, 1 do
+    root.Sprites["TitleMenuEntry" .. (i + 4)].Bounds = {
+        X = 2052, Y = 1026 + 33 * i, Width = 325, Height = 31
+    };
+    root.Sprites["TitleMenuEntryHighlighted" .. (i + 4)].Bounds = {
+        X = 1725, Y = 1026 + 33 * i, Width = 325, Height = 31
+    };
+end
+
+for _, entry in ipairs({
+    { Index = 6, RowY = 1092 },
+    { Index = 10, RowY = 1224 }
+}) do
+    root.Sprites["TitleMenuEntry" .. entry.Index].Bounds = {
+        X = 2052, Y = entry.RowY, Width = 325, Height = 31
+    };
+    root.Sprites["TitleMenuEntryHighlighted" .. entry.Index].Bounds = {
+        X = 1725, Y = entry.RowY, Width = 325, Height = 31
+    };
+end
+
+root.Sprites["TitleMenuSecondaryItemHighlight"].Bounds = {
+    X = 1373, Y = 1488, Width = 427, Height = 42
+};
+root.Sprites["TitleMenuItemUpLine"].Bounds = {
+    X = 2707, Y = 1267, Width = 78, Height = 43
+};
+root.Sprites["TitleMenuItemStraightLine"].Bounds = {
+    X = 2707, Y = 1331, Width = 78, Height = 5
+};
+
+root.Sprites["TitleMenuEntry14"] = {
+    Sheet = "Title",
+    Bounds = { X = 1727, Y = 338, Width = 187, Height = 36 }
+};
+root.TitleMenu.MenuEntriesSprites[#root.TitleMenu.MenuEntriesSprites + 1] = "TitleMenuEntry14";
+
+root.Sprites["TitleMenuEntryHighlighted14"] = {
+    Sheet = "Title",
+    Bounds = { X = 1727, Y = 150, Width = 187, Height = 36 }
+};
+root.TitleMenu.MenuEntriesHighlightedSprites[#root.TitleMenu.MenuEntriesHighlightedSprites + 1] = "TitleMenuEntryHighlighted14";
+
+root.Sprites["TitleMenuItemHighlight"].Bounds = { X = 0, Y = 0, Width = 0, Height = 0 };
+
+root.Sprites["TitleMenuGuide"] = {
+    Sheet = "Guide",
+    Bounds = { X = 0, Y = 196, Width = 1018, Height = 47 }
+};
 
 root.Sprites["TitleMenuPressToStart"].Bounds = { X = 7, Y = 1386, Width = 450, Height = 34 };
 

@@ -20,6 +20,20 @@ void Configure() {
   }
 
   BackgroundSprite = EnsureGetMember<Sprite>("BackgroundSprite");
+  if (TryGetMember<Sprite>("MainGuideSprite", MainGuideSprite)) {
+    MainGuidePosition = EnsureGetMember<glm::vec2>("MainGuidePosition");
+  }
+  HasHelpMainEntry = TryGetMember<bool>("HasHelpMainEntry").value_or(false);
+  StartMainEntryPresentationOnly =
+      TryGetMember<bool>("StartMainEntryPresentationOnly").value_or(false);
+  ConfigMainEntryPresentationOnly =
+      TryGetMember<bool>("ConfigMainEntryPresentationOnly").value_or(false);
+  LoadSubmenuHandledByUI =
+      TryGetMember<bool>("LoadSubmenuHandledByUI").value_or(false);
+  LockedExtraSubmenuHandledByUI =
+      TryGetMember<bool>("LockedExtraSubmenuHandledByUI").value_or(false);
+  LockedExtraHasTrophy =
+      TryGetMember<bool>("LockedExtraHasTrophy").value_or(true);
   DelusionADVUnderSprite = EnsureGetMember<Sprite>("DelusionADVUnderSprite");
   DelusionADVSprite = EnsureGetMember<Sprite>("DelusionADVSprite");
   DelusionADVPosition = EnsureGetMember<glm::vec2>("DelusionADVPosition");
@@ -72,6 +86,10 @@ void Configure() {
   ItemCGLibraryY = EnsureGetMember<float>("ItemCGLibraryY");
   ItemSoundLibraryY = EnsureGetMember<float>("ItemSoundLibraryY");
   ItemMovieLibraryY = EnsureGetMember<float>("ItemMovieLibraryY");
+  LockedExtraClearListY =
+      TryGetMember<float>("LockedExtraClearListY").value_or(ItemSoundLibraryY);
+  LockedExtraTipsY =
+      TryGetMember<float>("LockedExtraTipsY").value_or(ItemMovieLibraryY);
   ItemTipsY = EnsureGetMember<float>("ItemTipsY");
   ItemTrophyY = EnsureGetMember<float>("ItemTrophyY");
   ItemConfigY = EnsureGetMember<float>("ItemConfigY");
@@ -89,6 +107,10 @@ void Configure() {
   SecondaryMenuExtraCGY = EnsureGetMember<float>("SecondaryMenuExtraCGY");
   SecondaryMenuExtraSoundY = EnsureGetMember<float>("SecondaryMenuExtraSoundY");
   SecondaryMenuExtraMovieY = EnsureGetMember<float>("SecondaryMenuExtraMovieY");
+  LockedExtraClearLineY = TryGetMember<float>("LockedExtraClearLineY")
+                              .value_or(SecondaryMenuExtraSoundY);
+  LockedExtraTipsLineY = TryGetMember<float>("LockedExtraTipsLineY")
+                             .value_or(SecondaryMenuExtraMovieY);
   SecondaryMenuExtraTipsY = EnsureGetMember<float>("SecondaryMenuExtraTipsY");
   SecondaryMenuExtraTrophyY =
       EnsureGetMember<float>("SecondaryMenuExtraTrophyY");
