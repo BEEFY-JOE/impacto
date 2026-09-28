@@ -579,10 +579,16 @@ void TitleMenu::Update(float dt) {
 
 void TitleMenu::Render() {
   const auto presentationState = ResolveTitleDispCtState();
+  const bool configSelected = ConfigMainEntryResult >= 0 &&
+                              ScrWork[SW_TITLECUR1] == ConfigMainEntryResult;
+  // Phase 11 starts before Options is Showing; keep the title visible through
+  // that gap.
   const bool renderBehindConfigOpening =
       RenderBehindConfigOpening && ScrWork[SW_TITLEMOVIECT] == 11 &&
-      UI::OptionsMenuPtr != nullptr && UI::OptionsMenuPtr->State == Showing &&
-      UI::OptionsMenuPtr->LastFocusedMenu == this;
+      configSelected && UI::OptionsMenuPtr != nullptr &&
+      (UI::OptionsMenuPtr->State == Hidden ||
+       (UI::OptionsMenuPtr->State == Showing &&
+        UI::OptionsMenuPtr->LastFocusedMenu == this));
   const auto renderState = renderBehindConfigOpening
                                ? TitleDispCtState::MainEntriesControl
                                : presentationState;
