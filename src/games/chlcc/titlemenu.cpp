@@ -7,6 +7,7 @@
 #include "../../inputsystem.h"
 #include "../../vm/interface/input.h"
 #include "../../ui/widgets/label.h"
+#include "../../ui/ui.h"
 #include "../../profile/ui/titlemenu.h"
 #include "../../profile/games/chlcc/titlemenu.h"
 #include "../../profile/scriptvars.h"
@@ -578,9 +579,16 @@ void TitleMenu::Update(float dt) {
 
 void TitleMenu::Render() {
   const auto presentationState = ResolveTitleDispCtState();
+  const bool renderBehindConfigOpening =
+      RenderBehindConfigOpening && ScrWork[SW_TITLEMOVIECT] == 11 &&
+      UI::OptionsMenuPtr != nullptr && UI::OptionsMenuPtr->State == Showing &&
+      UI::OptionsMenuPtr->LastFocusedMenu == this;
+  const auto renderState = renderBehindConfigOpening
+                               ? TitleDispCtState::MainEntriesControl
+                               : presentationState;
   if (State != Hidden && GetFlag(SF_TITLEMODE)) {
     if (ScrWork[SW_MENUCT] < 64) {
-      switch (presentationState) {
+      switch (renderState) {
         case TitleDispCtState::IntroAnimation: {
           if (IntroSequence.FallingStarsAnimation.IsIn()) {
             Renderer->DrawSprite(BackgroundSprite, glm::vec2(0.0f));
