@@ -23,6 +23,8 @@ inline glm::vec2 MainGuidePosition;
 inline bool HasHelpMainEntry = false;
 inline bool StartMainEntryPresentationOnly = false;
 inline bool ConfigMainEntryPresentationOnly = false;
+inline int ConfigMainEntryResult = -1;
+inline int ConfigMainEntrySelectionReadyFlag = -1;
 inline bool LoadSubmenuHandledByUI = false;
 inline bool LockedExtraSubmenuHandledByUI = false;
 inline bool LockedExtraHasTrophy = true;

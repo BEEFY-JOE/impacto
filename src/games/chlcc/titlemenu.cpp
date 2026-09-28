@@ -116,7 +116,15 @@ TitleMenu::TitleMenu() {
                            ItemHighlightSprite,
                            glm::vec2(ItemHighlightOffset.x - 1.0f,
                                      ItemYBase - 1.0f + 3 * ItemPadding));
-  if (!ConfigMainEntryPresentationOnly) System->OnClickHandler = onClick;
+  if (ConfigMainEntryResult >= 0 && ConfigMainEntrySelectionReadyFlag >= 0) {
+    System->OnClickHandler = [](auto* btn) {
+      btn->Hovered = false;
+      ScrWork[SW_TITLECUR1] = ConfigMainEntryResult;
+      SetFlag(ConfigMainEntrySelectionReadyFlag, true);
+    };
+  } else if (!ConfigMainEntryPresentationOnly) {
+    System->OnClickHandler = onClick;
+  }
   MainItems->Add(System, FDIR_DOWN);
 
   if (HasHelpMainEntry) {
