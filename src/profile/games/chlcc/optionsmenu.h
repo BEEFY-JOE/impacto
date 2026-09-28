@@ -8,6 +8,9 @@ namespace CHLCC {
 namespace OptionsMenu {
 
 inline uint32_t BackgroundColor;
+inline bool UseSubmenuCounterLifecycle = false;
+inline bool ShowControllerType = true;
+inline bool ShowImageSize = true;
 
 inline Sprite CircleSprite;
 

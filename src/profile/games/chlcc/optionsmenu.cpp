@@ -15,6 +15,10 @@ namespace OptionsMenu {
 
 void Configure() {
   BackgroundColor = EnsureGetMember<uint32_t>("BackgroundColor");
+  UseSubmenuCounterLifecycle =
+      TryGetMember<bool>("UseSubmenuCounterLifecycle").value_or(false);
+  ShowControllerType = TryGetMember<bool>("ShowControllerType").value_or(true);
+  ShowImageSize = TryGetMember<bool>("ShowImageSize").value_or(true);
 
   CircleSprite = EnsureGetMember<Sprite>("CircleSprite");
 

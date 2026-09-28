@@ -74,21 +74,23 @@ static std::unique_ptr<Widgets::Group> CreateTextPage(
     addButton(2, AutoQuickSave, std::span<const uint8_t>(AutoQuickSaveValues),
               sprites);
   }
-  {
+  if (ShowControllerType) {
     constexpr static std::array<std::reference_wrapper<const Sprite>, 2>
         sprites{SettingTypeASprite, SettingTypeBSprite};
     addButton(3, ControllerType, std::span<const uint8_t>(ControllerTypeValues),
               sprites);
   }
 
-  highlightBounds.X = TextPageEntryPositions[4].x;
-  highlightBounds.Y = TextPageEntryPositions[4].y;
-  textPage->Add(
-      new OptionsSlider(
-          ImageSize, 0.0f, 1.0f, SliderBarBaseSprite, SliderBarFillSprite,
-          highlightBounds.GetPos() + glm::vec2(highlightBounds.Width, 0.0f),
-          highlightBounds, highlight),
-      FDIR_DOWN);
+  if (ShowImageSize) {
+    highlightBounds.X = TextPageEntryPositions[4].x;
+    highlightBounds.Y = TextPageEntryPositions[4].y;
+    textPage->Add(
+        new OptionsSlider(
+            ImageSize, 0.0f, 1.0f, SliderBarBaseSprite, SliderBarFillSprite,
+            highlightBounds.GetPos() + glm::vec2(highlightBounds.Width, 0.0f),
+            highlightBounds, highlight),
+        FDIR_DOWN);
+  }
 
   // Text settings
   {
@@ -221,8 +223,8 @@ void OptionsMenu::Show() {
 }
 
 void OptionsMenu::Hide() {
-  if (State == Shown) {
-    SetFlag(SF_SUBMENUEXIT, true);
+  if (State == Shown || (UseSubmenuCounterLifecycle && State == Showing)) {
+    if (!UseSubmenuCounterLifecycle) SetFlag(SF_SUBMENUEXIT, true);
     MenuTransition.StartOut();
     FromSystemMenuTransition->StartOut();
   }
@@ -306,6 +308,29 @@ void OptionsMenu::UpdatePageInput(float dt) {
 }
 
 void OptionsMenu::UpdateVisibility() {
+  if (UseSubmenuCounterLifecycle) {
+    const int submenuCounter = ScrWork[SW_SYSSUBMENUCT];
+    const int submenuCounterMax = ScrWork[SW_SYSSUBMENUCTMAX];
+    const bool isOptionsSubmenu = ScrWork[SW_SYSSUBMENUNO] == 5;
+
+    if ((State == Shown &&
+         (!isOptionsSubmenu || submenuCounter < submenuCounterMax)) ||
+        (State == Showing && (!isOptionsSubmenu || submenuCounter == 0))) {
+      Hide();
+    } else if (State == Hidden && isOptionsSubmenu && submenuCounter > 0) {
+      Show();
+    }
+
+    if (State == Showing && isOptionsSubmenu &&
+        submenuCounter == submenuCounterMax && FadeAnimation.IsIn()) {
+      State = Shown;
+    } else if (State == Hiding && submenuCounter == 0 &&
+               FadeAnimation.IsOut()) {
+      State = Hidden;
+    }
+    return;
+  }
+
   const int sysMenuCt = ScrWork[SW_SYSMENUCT];
   const int systemMenuCHG = ScrWork[SW_SYSTEMMENUCHG];
 
@@ -408,7 +433,17 @@ void OptionsMenu::UpdateValues() {
 }
 
 void OptionsMenu::UpdateInput(float dt) {
-  if (State != Shown || PageTransitionAnimation.IsPlaying()) return;
+  if (State != Shown) return;
+
+  if (UseSubmenuCounterLifecycle &&
+      ((PADinputButtonWentDown | PADinputMouseWentDown) & PAD1B)) {
+    SetFlag(SF_SUBMENUEXIT, true);
+    PADinputButtonWentDown &= ~PAD1B;
+    PADinputMouseWentDown &= ~PAD1B;
+    return;
+  }
+
+  if (PageTransitionAnimation.IsPlaying()) return;
 
   UI::OptionsMenu::UpdateInput(dt);
 }
