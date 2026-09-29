@@ -152,6 +152,13 @@ TitleMenu::TitleMenu() {
                                  MenuEntriesHSprites[14], ItemHighlightSprite,
                                  glm::vec2(ItemHighlightOffset.x - 1.0f,
                                            ItemYBase - 1.0f + 4 * ItemPadding));
+    if (HelpMainEntryResult >= 0 && HelpMainEntrySelectionReadyFlag >= 0) {
+      help->OnClickHandler = [](auto* btn) {
+        btn->Hovered = false;
+        ScrWork[SW_TITLECUR1] = HelpMainEntryResult;
+        SetFlag(HelpMainEntrySelectionReadyFlag, true);
+      };
+    }
     MainItems->Add(help, FDIR_DOWN);
   }
 

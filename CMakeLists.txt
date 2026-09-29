@@ -128,6 +128,7 @@ set(Impacto_Src
     src/profile/games/chlcc/commonmenu.cpp
     src/profile/games/chlcc/dialoguebox.cpp
     src/profile/games/chlcc/titlemenu.cpp
+    src/profile/games/chlcc/helpmenu.cpp
     src/profile/games/chlcc/savemenu.cpp
     src/profile/games/chlcc/sysmesbox.cpp
     src/profile/games/chlcc/clearlistmenu.cpp
@@ -191,6 +192,7 @@ set(Impacto_Src
 
     src/games/chlcc/commonmenu.cpp
     src/games/chlcc/titlemenu.cpp
+    src/games/chlcc/helpmenu.cpp
     src/games/chlcc/savemenu.cpp
     src/games/chlcc/sysmesbox.cpp
     src/games/chlcc/animations/selectprompt.cpp
@@ -504,6 +506,7 @@ set(Impacto_Header
     src/profile/games/chlcc/commonmenu.h
     src/profile/games/chlcc/dialoguebox.h
     src/profile/games/chlcc/titlemenu.h
+    src/profile/games/chlcc/helpmenu.h
     src/profile/games/chlcc/savemenu.h
     src/profile/games/chlcc/sysmesbox.h
     src/profile/games/chlcc/clearlistmenu.h
@@ -565,6 +568,7 @@ set(Impacto_Header
 
     src/games/chlcc/commonmenu.h
     src/games/chlcc/titlemenu.h
+    src/games/chlcc/helpmenu.h
     src/games/chlcc/savemenu.h
     src/games/chlcc/sysmesbox.h
     src/games/chlcc/animations/selectprompt.h

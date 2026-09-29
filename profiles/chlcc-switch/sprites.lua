@@ -114,6 +114,11 @@ root.SpriteSheets = {
         DesignWidth = 2048,
         DesignHeight = 538
     },
+    ["Help"] = {
+        Path = { Mount = "system", Id = 22 },
+        DesignWidth = 1920,
+        DesignHeight = 1080
+    },
     ["DelusionText"] = {
         Path = { Mount = "system", Id = 31 },
         DesignWidth = 1920,
