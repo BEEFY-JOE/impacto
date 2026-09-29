@@ -1,6 +1,7 @@
 #include "titlemenu.h"
 
 #include "../../spritesheet.h"
+#include "../../audio/audiosystem.h"
 
 #include "../../renderer/renderer.h"
 #include "../../mem.h"
@@ -155,6 +156,7 @@ TitleMenu::TitleMenu() {
     if (HelpMainEntryResult >= 0 && HelpMainEntrySelectionReadyFlag >= 0) {
       help->OnClickHandler = [](auto* btn) {
         btn->Hovered = false;
+        Audio::PlayInGroup(Audio::ACG_SE, "sysse", 2, false, 0);
         ScrWork[SW_TITLECUR1] = HelpMainEntryResult;
         SetFlag(HelpMainEntrySelectionReadyFlag, true);
       };
@@ -689,9 +691,17 @@ void TitleMenu::Render() {
       (UI::OptionsMenuPtr->State == Hidden ||
        (UI::OptionsMenuPtr->State == Showing &&
         UI::OptionsMenuPtr->LastFocusedMenu == this));
-  const auto renderState = renderBehindConfigOpening
-                               ? TitleDispCtState::MainEntriesControl
-                               : presentationState;
+  const bool renderBehindHelpTransition =
+      RenderBehindHelpTransition && ScrWork[SW_TITLEMOVIECT] == 11 &&
+      HelpMainEntryResult >= 0 &&
+      ScrWork[SW_TITLECUR1] == HelpMainEntryResult &&
+      UI::HelpMenuPtr != nullptr &&
+      (UI::HelpMenuPtr->State == Hidden || UI::HelpMenuPtr->State == Showing ||
+       UI::HelpMenuPtr->State == Hiding);
+  const auto renderState =
+      (renderBehindConfigOpening || renderBehindHelpTransition)
+          ? TitleDispCtState::MainEntriesControl
+          : presentationState;
   if (Profile::Vm::GameInstructionSet ==
       Impacto::Vm::InstructionSet::LCCSwitch) {
     const int displayState = ScrWork[SW_TITLEDISPCT];

@@ -1,8 +1,10 @@
 #include "helpmenu.h"
 
 #include "../../inputsystem.h"
+#include "../../audio/audiosystem.h"
 #include "../../mem.h"
 #include "../../profile/games/chlcc/helpmenu.h"
+#include "../../profile/game.h"
 #include "../../profile/scriptvars.h"
 #include "../../renderer/renderer.h"
 #include "../../ui/ui.h"
@@ -33,6 +35,7 @@ void HelpMenu::Hide() {
   State = Hiding;
   IsFocused = false;
   FadeAnimation.StartOut();
+  Audio::PlayInGroup(Audio::ACG_SE, "sysse", 3, false, 0);
 }
 
 void HelpMenu::Update(float dt) {
@@ -76,9 +79,22 @@ void HelpMenu::UpdateInput(float dt) {
 void HelpMenu::Render() {
   if (State == Hidden) return;
 
-  const glm::vec4 tint{glm::vec3{1.0f}, FadeAnimation.Progress};
-  Renderer->DrawSprite(PageSprite, glm::vec2(0.0f, 0.0f), tint);
-  Renderer->DrawSprite(BackGuideSprite, BackGuidePosition, tint);
+  const float transition = FadeAnimation.Progress;
+  const glm::vec2 offset{0.0f, (1.0f - transition) * PageStartYOffset};
+  const glm::vec4 tint{glm::vec3{1.0f}, transition};
+  Renderer->DrawSprite(PageSprite, offset, tint);
+
+  const float guideStartProgress =
+      1.0f - BackGuideSlideDuration /
+                 FadeAnimation.GetDuration(FadeAnimation.Direction);
+  if (transition >= guideStartProgress) {
+    const float guideProgress =
+        (transition - guideStartProgress) / (1.0f - guideStartProgress);
+    const float guideX = glm::mix(Profile::Game::DesignWidth,
+                                  BackGuidePosition.x, guideProgress);
+    Renderer->DrawSprite(BackGuideSprite,
+                         glm::vec2{guideX, BackGuidePosition.y});
+  }
 }
 
 }  // namespace CHLCC

@@ -9,6 +9,8 @@ namespace HelpMenu {
 
 inline float FadeInDuration;
 inline float FadeOutDuration;
+inline float PageStartYOffset;
+inline float BackGuideSlideDuration;
 inline Sprite PageSprite;
 inline Sprite BackGuideSprite;
 inline glm::vec2 BackGuidePosition;

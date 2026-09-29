@@ -30,6 +30,8 @@ void Configure() {
       TryGetMember<bool>("ConfigMainEntryPresentationOnly").value_or(false);
   RenderBehindConfigOpening =
       TryGetMember<bool>("RenderBehindConfigOpening").value_or(false);
+  RenderBehindHelpTransition =
+      TryGetMember<bool>("RenderBehindHelpTransition").value_or(false);
   ConfigMainEntryResult =
       TryGetMember<int>("ConfigMainEntryResult").value_or(-1);
   ConfigMainEntrySelectionReadyFlag =

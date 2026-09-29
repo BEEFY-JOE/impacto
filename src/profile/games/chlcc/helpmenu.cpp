@@ -13,6 +13,8 @@ namespace HelpMenu {
 void Configure() {
   FadeInDuration = EnsureGetMember<float>("FadeInDuration");
   FadeOutDuration = EnsureGetMember<float>("FadeOutDuration");
+  PageStartYOffset = EnsureGetMember<float>("PageStartYOffset");
+  BackGuideSlideDuration = EnsureGetMember<float>("BackGuideSlideDuration");
   PageSprite = EnsureGetMember<Sprite>("PageSprite");
   BackGuideSprite = EnsureGetMember<Sprite>("BackGuideSprite");
   BackGuidePosition = EnsureGetMember<glm::vec2>("BackGuidePosition");

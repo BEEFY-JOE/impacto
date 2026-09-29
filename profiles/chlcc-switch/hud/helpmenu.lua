@@ -1,8 +1,10 @@
 root.HelpMenu = {
     DrawType = DrawComponentType.SystemMenu,
     Type = HelpMenuType.CHLCC,
-    FadeInDuration = 32/60,
-    FadeOutDuration = 32/60,
+    FadeInDuration = 25/60,
+    FadeOutDuration = 25/60,
+    PageStartYOffset = -400,
+    BackGuideSlideDuration = 2/60,
     PageSprite = "HelpPage",
     BackGuideSprite = "HelpBackGuide",
     BackGuidePosition = { X = 1692, Y = 976 },

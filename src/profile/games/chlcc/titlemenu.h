@@ -24,6 +24,7 @@ inline bool HasHelpMainEntry = false;
 inline bool StartMainEntryPresentationOnly = false;
 inline bool ConfigMainEntryPresentationOnly = false;
 inline bool RenderBehindConfigOpening = false;
+inline bool RenderBehindHelpTransition = false;
 inline int ConfigMainEntryResult = -1;
 inline int ConfigMainEntrySelectionReadyFlag = -1;
 inline int HelpMainEntryResult = -1;

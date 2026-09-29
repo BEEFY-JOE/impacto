@@ -39,6 +39,7 @@ root.TitleMenu.ConfigMainEntrySelectionReadyFlag = 2050;
 root.TitleMenu.HelpMainEntryResult = 11;
 root.TitleMenu.HelpMainEntrySelectionReadyFlag = 2050;
 root.TitleMenu.RenderBehindConfigOpening = true;
+root.TitleMenu.RenderBehindHelpTransition = true;
 root.TitleMenu.MainGuideSprite = "TitleMenuGuide";
 root.TitleMenu.MainGuidePosition = { X = 1335, Y = 977 };
 root.TitleMenu.LoadSubmenuHandledByUI = true;
