@@ -258,6 +258,8 @@ VmInstruction(InstOption) {
     case 4:
       if (Profile::Vm::GameInstructionSet == InstructionSet::CHLCC) {
         PopExpression(unusedPageNo);
+      } else if (Profile::Vm::GameInstructionSet == InstructionSet::LCCSwitch) {
+        PopUint8(unusedSwitchArg);
       }
 
       UI::OptionsMenuPtr->ResetToDefault();

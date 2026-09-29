@@ -7,6 +7,7 @@
 #include "../../inputsystem.h"
 #include "../../vm/interface/input.h"
 #include "../../ui/widgets/label.h"
+#include "../../ui/ui.h"
 #include "../../profile/ui/titlemenu.h"
 #include "../../profile/games/chlcc/titlemenu.h"
 #include "../../profile/scriptvars.h"
@@ -135,7 +136,15 @@ TitleMenu::TitleMenu() {
                            ItemHighlightSprite,
                            glm::vec2(ItemHighlightOffset.x - 1.0f,
                                      ItemYBase - 1.0f + 3 * ItemPadding));
-  if (!ConfigMainEntryPresentationOnly) System->OnClickHandler = onClick;
+  if (ConfigMainEntryResult >= 0 && ConfigMainEntrySelectionReadyFlag >= 0) {
+    System->OnClickHandler = [](auto* btn) {
+      btn->Hovered = false;
+      ScrWork[SW_TITLECUR1] = ConfigMainEntryResult;
+      SetFlag(ConfigMainEntrySelectionReadyFlag, true);
+    };
+  } else if (!ConfigMainEntryPresentationOnly) {
+    System->OnClickHandler = onClick;
+  }
   MainItems->Add(System, FDIR_DOWN);
 
   if (HasHelpMainEntry) {
@@ -663,6 +672,19 @@ void TitleMenu::Update(float dt) {
 
 void TitleMenu::Render() {
   const auto presentationState = ResolveTitleDispCtState();
+  const bool configSelected = ConfigMainEntryResult >= 0 &&
+                              ScrWork[SW_TITLECUR1] == ConfigMainEntryResult;
+  // Phase 11 starts before Options is Showing; keep the title visible through
+  // that gap.
+  const bool renderBehindConfigOpening =
+      RenderBehindConfigOpening && ScrWork[SW_TITLEMOVIECT] == 11 &&
+      configSelected && UI::OptionsMenuPtr != nullptr &&
+      (UI::OptionsMenuPtr->State == Hidden ||
+       (UI::OptionsMenuPtr->State == Showing &&
+        UI::OptionsMenuPtr->LastFocusedMenu == this));
+  const auto renderState = renderBehindConfigOpening
+                               ? TitleDispCtState::MainEntriesControl
+                               : presentationState;
   if (Profile::Vm::GameInstructionSet ==
       Impacto::Vm::InstructionSet::LCCSwitch) {
     const int displayState = ScrWork[SW_TITLEDISPCT];
@@ -688,7 +710,7 @@ void TitleMenu::Render() {
   }
   if (State != Hidden && GetFlag(SF_TITLEMODE)) {
     if (ScrWork[SW_MENUCT] < 64) {
-      switch (presentationState) {
+      switch (renderState) {
         case TitleDispCtState::IntroAnimation: {
           if (IntroSequence.FallingStarsAnimation.IsIn()) {
             if (Profile::Vm::GameInstructionSet ==

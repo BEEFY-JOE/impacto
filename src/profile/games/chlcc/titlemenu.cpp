@@ -28,6 +28,12 @@ void Configure() {
       TryGetMember<bool>("StartMainEntryPresentationOnly").value_or(false);
   ConfigMainEntryPresentationOnly =
       TryGetMember<bool>("ConfigMainEntryPresentationOnly").value_or(false);
+  RenderBehindConfigOpening =
+      TryGetMember<bool>("RenderBehindConfigOpening").value_or(false);
+  ConfigMainEntryResult =
+      TryGetMember<int>("ConfigMainEntryResult").value_or(-1);
+  ConfigMainEntrySelectionReadyFlag =
+      TryGetMember<int>("ConfigMainEntrySelectionReadyFlag").value_or(-1);
   LoadSubmenuHandledByUI =
       TryGetMember<bool>("LoadSubmenuHandledByUI").value_or(false);
   LockedExtraSubmenuHandledByUI =
