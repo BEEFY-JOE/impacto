@@ -2,22 +2,22 @@ root.OptionsMenu.UseSubmenuCounterLifecycle = true;
 root.OptionsMenu.ShowControllerType = false;
 root.OptionsMenu.ShowImageSize = false;
 
-root.OptionsMenu.MenuTitleTextRightPos = { X = 826.5, Y = 787.5 };
-root.OptionsMenu.ButtonPromptPosition = { X = 718, Y = 974 };
-root.OptionsMenu.SelectedDotOffset = { X = -12, Y = 16 };
-root.OptionsMenu.SelectedDotVoicesOffset = { X = -14, Y = 16 };
+root.OptionsMenu.MenuTitleTextRightPos = { X = 824, Y = 785 };
+root.OptionsMenu.ButtonPromptPosition = { X = 720, Y = 974 };
+root.OptionsMenu.SelectedDotOffset = { X = -12.5, Y = 15 };
+root.OptionsMenu.SelectedDotVoicesOffset = { X = -14, Y = 15 };
 root.OptionsMenu.VoiceMutedOffset = { X = 34.5, Y = 0 };
 root.OptionsMenu.SelectedLabelBaseSpeed = 73.5 / (4 / 60);
 root.OptionsMenu.SelectedLabelModalDistancePerEntry = 73.5;
 
-root.OptionsMenu.BasicSettingsPos = { X = 0, Y = 67.5 };
-root.OptionsMenu.TextSettingsPos = { X = 0, Y = 549.5 };
-root.OptionsMenu.SoundSettingsPos = { X = 0, Y = 67.5 };
-root.OptionsMenu.VoiceSettingsPos = { X = 0, Y = 69 };
+root.OptionsMenu.BasicSettingsPos = { X = 0.5, Y = 67.5 };
+root.OptionsMenu.TextSettingsPos = { X = 0.5, Y = 549.5 };
+root.OptionsMenu.SoundSettingsPos = { X = 0.5, Y = 67.5 };
+root.OptionsMenu.VoiceSettingsPos = { X = -1.5, Y = 69 };
 
-root.OptionsMenu.SliderBarTopRightOffset = { X = -23, Y = 10 };
+root.OptionsMenu.SliderBarTopRightOffset = { X = -26, Y = 9 };
 root.OptionsMenu.SliderBarFillOffset = { X = 7, Y = 5 };
-root.OptionsMenu.SettingButtonTopRightOffset = { X = -20, Y = 9 };
+root.OptionsMenu.SettingButtonTopRightOffset = { X = -21, Y = 7 };
 
 root.OptionsMenu.TextPageEntryPositions = {
     { X = 156, Y = 184.5 },
@@ -60,8 +60,8 @@ root.Sprites["VoiceSettingsSprite"].Bounds = { X = 0, Y = 0, Width = 677, Height
 root.Sprites["MenuTitleTextConfig"].Bounds = { X = 720, Y = 903, Width = 893, Height = 181 };
 root.Sprites["CircleConfig"].Bounds = { X = 0, Y = 1376, Width = 160, Height = 160 };
 
-root.Sprites["SelectedLabelSprite"].Bounds = { X = 720, Y = 1085, Width = 947, Height = 62 };
-root.Sprites["SelectedSprite"].Bounds = { X = 1076, Y = 1149, Width = 354, Height = 61 };
+root.Sprites["SelectedLabelSprite"].Bounds = { X = 720, Y = 1086, Width = 947, Height = 61 };
+root.Sprites["SelectedSprite"].Bounds = { X = 1079, Y = 1149, Width = 348, Height = 61 };
 root.Sprites["SelectedDotSprite"].Bounds = { X = 64, Y = 903, Width = 27, Height = 27 };
 root.Sprites["VoiceMutedSprite"].Bounds = { X = 0, Y = 902, Width = 61, Height = 60 };
 root.Sprites["VoiceMutedSprite"].BaseScale = { X = 1, Y = 1 };
