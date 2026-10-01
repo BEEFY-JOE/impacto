@@ -102,6 +102,7 @@ enum class TrophyMenuType : int {
 enum class HelpMenuType : int {
   None,
   CCLCC,
+  CHLCC,
 };
 enum class GameSpecificType : int {
   None,
